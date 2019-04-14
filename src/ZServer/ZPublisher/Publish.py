@@ -14,15 +14,16 @@
 """
 import os
 import sys
+from six.moves import zip
 try:
     from _thread import allocate_lock
 except ImportError:
-    from thread import allocate_lock
+    from six.moves._thread import allocate_lock
 import transaction
 try:
     from urllib import parse
 except ImportError:
-    from urlparse import urlparse
+    from six.moves.urllib.parse import urlparse
 
 from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager

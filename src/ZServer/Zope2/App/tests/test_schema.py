@@ -79,7 +79,7 @@ class ZServerStartupTestCase(unittest.TestCase):
               ANOTHER value2
             </cgi-environment>
             """)
-        items = conf.cgi_environment.items()
+        items = list(conf.cgi_environment.items())
         items.sort()
         self.assertEqual(
             items, [("ANOTHER", "value2"), ("HEADER", "value")])

@@ -110,6 +110,6 @@ class iterator_producer(object):
 
     def more(self):
         try:
-            return self.iterator.next()
+            return next(self.iterator)
         except StopIteration:
             return ''

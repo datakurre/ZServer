@@ -25,6 +25,7 @@ import unittest
 from cStringIO import StringIO
 
 from zope.event import subscribers
+from six.moves import range
 
 
 class ZServerResponseTestCase(unittest.TestCase):

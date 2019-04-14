@@ -14,8 +14,8 @@
 """
 
 import sys
-from cStringIO import StringIO
-from urllib import quote
+from io import StringIO
+from six.moves.urllib.parse import quote
 
 import transaction
 from AccessControl.Permissions import delete_objects
@@ -36,6 +36,7 @@ from webdav.common import urlfix
 from webdav.common import urljoin
 from webdav.PropertySheets import DAVProperties
 from webdav.xmltools import XmlParser
+from six.moves import map
 
 
 def safe_quote(url, mark=r'%'):
@@ -116,7 +117,7 @@ class PropFind(object):
             url = url + '/'
         result.write('<d:response>\n<d:href>%s</d:href>\n' % safe_quote(url))
         if hasattr(aq_base(obj), 'propertysheets'):
-            propsets = obj.propertysheets.values()
+            propsets = list(obj.propertysheets.values())
             obsheets = obj.propertysheets
         else:
             davprops = DAVProps(obj)
@@ -149,13 +150,13 @@ class PropFind(object):
                         rdict[code] = [prop]
                     else:
                         rdict[code].append(prop)
-            keys = rdict.keys()
+            keys = list(rdict.keys())
             keys.sort()
             for key in keys:
                 result.write('<d:propstat>\n'
                              '  <d:prop>\n'
                              )
-                map(result.write, rdict[key])
+                list(map(result.write, rdict[key]))
                 result.write('  </d:prop>\n'
                              '  <d:status>HTTP/1.1 %s</d:status>\n'
                              '</d:propstat>\n' % key

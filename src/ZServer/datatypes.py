@@ -18,15 +18,13 @@ Each server type is represented by a ServerFactory instance.
 from __future__ import absolute_import
 
 import socket
+
 import ZConfig
 import twisted.web.wsgi
-from twisted.application.service import Service
-from twisted.internet import reactor, ssl, protocol
 from ZPublisher.WSGIPublisher import publish_module
-from twisted.internet.endpoints import TCP4ServerEndpoint, SSL4ServerEndpoint, \
-    serverFromString
-from twisted.python.modules import getModule
-from twisted.web.http import HTTPFactory
+from twisted.application.service import Service
+from twisted.internet import reactor
+from twisted.internet.endpoints import serverFromString
 from twisted.web.server import Site
 
 
@@ -94,7 +92,8 @@ class HTTPServerFactory(Service, ServerFactory):
         base = os.path.dirname(__file__)
         endpoint = serverFromString(
             twisted.internet.reactor,
-            f'ssl:port=8080:privateKey={base}/privkey.pem:certKey={base}/cert.pem'
+            'tcp:port=8080'
+#           f'ssl:port=8080:privateKey={base}/privkey.pem:certKey={base}/cert.pem'
         )
         endpoint.listen(site)
         return self

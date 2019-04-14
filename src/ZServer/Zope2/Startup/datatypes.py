@@ -248,12 +248,12 @@ class DBTab(object):
     def listMountPaths(self):
         """Returns a sequence of (virtual_mount_path, database_name).
         """
-        return self.mount_paths.items()
+        return list(self.mount_paths.items())
 
     def listDatabaseNames(self):
         """Returns a sequence of names.
         """
-        return self.db_factories.keys()
+        return list(self.db_factories.keys())
 
     def hasDatabase(self, name):
         """Returns true if name is the name of a configured database."""

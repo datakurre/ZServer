@@ -44,7 +44,7 @@ class SignalHandler(object):
     def getRegisteredSignals(self):
         """Return a list of the signals that have handlers registered. This
            is used to pass the signals through to the ZDaemon code."""
-        return self.registry.keys()
+        return list(self.registry.keys())
 
     def signalHandler(self, signum, frame):
         """Meta signal handler that dispatches to registered handlers."""

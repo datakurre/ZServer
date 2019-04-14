@@ -32,9 +32,10 @@ from Testing.ZopeTestCase import standard_permissions
 from Testing.ZopeTestCase.sandbox import AppZapper
 from ZServer.Testing.functional import ResponseWrapper
 from ZServer.Testing.functional import savestate
+import six
 
 if sys.version_info >= (3, ):
-    basestring = str
+    six.string_types = str
 
 
 # @zope.interface.implementer(zope.server.interfaces.IHeaderOutput)
@@ -60,7 +61,7 @@ class HTTPHeaderOutput(object):
         ))
 
     def appendResponseHeaders(self, lst):
-        if lst and isinstance(lst[0], basestring):
+        if lst and isinstance(lst[0], six.string_types):
             headers = [split_header(header) for header in lst]
         else:
             headers = lst
@@ -128,7 +129,7 @@ def http(request_string, handle_errors=True):
 
     This is used for HTTP doc tests.
     """
-    import urllib
+    import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
     import rfc822
     from cStringIO import StringIO
     from ZPublisher.HTTPResponse import HTTPResponse as Response
@@ -145,7 +146,7 @@ def http(request_string, handle_errors=True):
     command_line = request_string[:l].rstrip()
     request_string = request_string[l + 1:]
     method, path, protocol = command_line.split()
-    path = urllib.unquote(path)
+    path = six.moves.urllib.parse.unquote(path)
 
     instream = StringIO(request_string)
 

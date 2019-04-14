@@ -5,7 +5,7 @@ import re
 import sys
 import time
 import types
-import httplib
+import six.moves.http_client
 import mimetools
 from types import FileType
 from mimetypes import guess_type
@@ -13,14 +13,15 @@ from base64 import encodestring
 from App.Common import rfc1123_date
 from cStringIO import StringIO
 from random import random
-from urllib import quote
+from six.moves.urllib.parse import quote
+from six.moves import map
 
 
 class NotAvailable(Exception):
     pass
 
 
-class HTTP(httplib.HTTP):
+class HTTP(six.moves.http_client.HTTP):
     # A revised version of the HTTP class that can do basic
     # HTTP 1.1 connections, and also compensates for a bug
     # that occurs on some platforms in 1.5 and 1.5.1 with
@@ -133,7 +134,7 @@ class Resource(object):
             data = h.getfile().read()
             h.close()
         except Exception:
-            raise NotAvailable(sys.exc_value)
+            raise NotAvailable(sys.exc_info()[1])
         return http_response(ver, code, msg, hdrs, data)
 
     # HTTP methods
@@ -362,7 +363,7 @@ class http_response(object):
     def __str__(self):
         data = []
         data.append('%s %s %s\r\n' % (self.version, self.code, self.msg))
-        map(data.append, self.headers.headers)
+        list(map(data.append, self.headers.headers))
         data.append('\r\n')
         data.append(self.body)
         return ''.join(data)
@@ -471,7 +472,7 @@ def marshal_tuple(name, seq):
 varfuncs = {}
 vartypes = (('int', type(1), marshal_int),
             ('float', type(1.0), marshal_float),
-            ('long', type(1L), marshal_long),  # NOQA
+            ('long', type(1), marshal_long),  # NOQA
             ('list', type([]), marshal_list),
             ('tuple', type(()), marshal_tuple),
             ('string', type(''), marshal_string),

@@ -12,6 +12,7 @@
 # timeouts ("if the channel doesn't close in 5 minutes, then forcibly
 # close it" would be a typical usage).
 
+from __future__ import print_function
 import asyncore
 import bisect
 import time

@@ -1,5 +1,6 @@
 # -*- Mode: Python; tab-width: 4 -*-
 
+from __future__ import print_function
 import re
 import string
 import StringIO
@@ -10,6 +11,7 @@ from .. import counter
 from ..default_handler import split_path, unquote
 from .. import fifo
 from .. import select_trigger
+from six.moves import range
 
 
 class request_queue(object):
@@ -322,7 +324,7 @@ class request_loop_thread(threading.Thread):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print('Usage: %s <worker_threads>' % sys.argv[0])
+        print(('Usage: %s <worker_threads>' % sys.argv[0]))
     else:
         nthreads = string.atoi(sys.argv[1])
 

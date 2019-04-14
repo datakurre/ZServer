@@ -60,6 +60,7 @@ the target directory, its ownership information and mode bit settings are left
 unchanged.
 """
 
+from __future__ import print_function
 import os
 import shutil
 import sys
@@ -185,7 +186,7 @@ def copyskel(sourcedir, targetdir, uid, gid, **replacements):
         finally:
             os.chdir(pwd)
     except (IOError, OSError) as msg:
-        print >>sys.stderr, msg
+        print(msg, file=sys.stderr)
         sys.exit(1)
 
 

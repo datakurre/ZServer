@@ -58,6 +58,7 @@ from asyncore import dispatcher
 from ZServer import ZOPE_VERSION, ZSERVER_VERSION
 from ZServer.utils import requestCloseOnExec
 from ZServer import DebugLogger
+import six
 
 
 CONTENT_LENGTH = re.compile('Content-Length: ([0-9]+)', re.I)
@@ -415,7 +416,7 @@ class zhttp_channel(http_channel):
             self.current_request = None
         while self.producer_fifo:
             p = self.producer_fifo_first()
-            if p is not None and not isinstance(p, basestring):
+            if p is not None and not isinstance(p, six.string_types):
                 p.more()  # free up resources held by producer
             self.producer_fifo_pop()
         dispatcher.close(self)

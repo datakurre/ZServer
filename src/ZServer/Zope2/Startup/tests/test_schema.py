@@ -77,7 +77,7 @@ class StartupTestCase(unittest.TestCase):
               NSYNC doesnt
             </environment>
             """)
-        items = conf.environment.items()
+        items = list(conf.environment.items())
         items.sort()
         self.assertEqual(
             items, [("FEARFACTORY", "rocks"), ("NSYNC", "doesnt")])

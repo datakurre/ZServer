@@ -1,9 +1,11 @@
 # -*- Mode: Python; tab-width: 4 -*-
 
+from __future__ import print_function
 import socket
 import string
 import time
 import http_date
+from six.moves import range
 
 now = http_date.build_http_date(time.time())
 
@@ -43,8 +45,8 @@ def test_cache(n=1000):
     for i in range(n):
         get(cache_request)
     end = t.end()
-    print('cache: %d requests, %.2f seconds, %.2f hits/sec' % (
-        n, end, n / end))
+    print(('cache: %d requests, %.2f seconds, %.2f hits/sec' % (
+        n, end, n / end)))
 
 
 def test_nocache(n=1000):
@@ -52,8 +54,8 @@ def test_nocache(n=1000):
     for i in range(n):
         get(nocache_request)
     end = t.end()
-    print('nocache: %d requests, %.2f seconds, %.2f hits/sec' % (
-        n, end, n / end))
+    print(('nocache: %d requests, %.2f seconds, %.2f hits/sec' % (
+        n, end, n / end)))
 
 
 if __name__ == '__main__':

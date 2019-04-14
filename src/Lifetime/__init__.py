@@ -1,3 +1,4 @@
+from __future__ import print_function
 import asyncore
 import logging
 import sys
@@ -129,5 +130,5 @@ def restartHandler():
 
 def showStacks():
     """Dump a stracktrace of all threads on the console."""
-    print(dump_threads())
+    print((dump_threads()))
     sys.stdout.flush()

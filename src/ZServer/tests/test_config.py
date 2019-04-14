@@ -60,7 +60,7 @@ class BaseTest(unittest.TestCase):
                         {"key": "value"}, portbase=9300)
         self.assert_(factory.dnsresolver is o)
         self.assertEqual(factory.module, "module")
-        self.assertEqual(factory.cgienv.items(), [("key", "value")])
+        self.assertEqual(list(factory.cgienv.items()), [("key", "value")])
         if port is None:
             self.assert_(factory.host is None, factory.host)
             self.assert_(factory.port is None, factory.port)

@@ -26,11 +26,13 @@ When run without arguments, this script will ask for the information necessary
 to create a Zope instance home.
 """
 
+from __future__ import print_function
 import getopt
 import os
 import sys
 
 import copyzopeskel
+from six.moves import input
 
 if sys.version_info > (3, ):
     raw_input = input
@@ -143,19 +145,19 @@ def main():
 
 def usage(stream, msg=None):
     if msg:
-        print >>stream, msg
-        print >>stream
+        print(msg, file=stream)
+        print(file=stream)
     program = os.path.basename(sys.argv[0])
-    print >>stream, __doc__ % {"program": program}
+    print(__doc__ % {"program": program}, file=stream)
 
 
 def get_skeltarget():
     print('Please choose a directory in which you\'d like to install')
     print('Zope "instance home" files such as database files, configuration')
     print('files, etc.')
-    print
+    print()
     while 1:
-        skeltarget = raw_input("Directory: ").strip()
+        skeltarget = input("Directory: ").strip()
         if skeltarget == '':
             print('You must specify a directory')
             continue
@@ -169,8 +171,8 @@ def get_inituser():
     print('Please choose a username and password for the initial user.')
     print('These will be the credentials you use to initially manage')
     print('your new Zope instance.')
-    print
-    user = raw_input("Username: ").strip()
+    print()
+    user = input("Username: ").strip()
     if user == '':
         return None, None
     while 1:
@@ -199,7 +201,7 @@ def check_buildout(script_path):
     """
     buildout_cfg = os.path.join(os.path.dirname(script_path), 'buildout.cfg')
     if os.path.exists(buildout_cfg):
-        from ConfigParser import RawConfigParser
+        from six.moves.configparser import RawConfigParser
         parser = RawConfigParser()
         parser.read(buildout_cfg)
         return 'zopepy' in parser.sections()

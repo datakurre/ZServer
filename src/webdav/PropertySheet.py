@@ -14,16 +14,18 @@
 import sys
 
 from webdav.xmltools import escape
+import six
+from six.moves import map
 
 if sys.version_info >= (3, ):
-    basestring = str
-    unicode = str
+    six.string_types = str
+    six.text_type = str
 
 
 def xml_escape(value):
-    if not isinstance(value, basestring):
-        value = unicode(value)
-    if not isinstance(value, unicode):
+    if not isinstance(value, six.string_types):
+        value = six.text_type(value)
+    if not isinstance(value, six.text_type):
         value = value.decode('utf-8')
     value = escape(value)
     return value.encode('utf-8')

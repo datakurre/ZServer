@@ -20,6 +20,7 @@ import re
 import stat
 import string
 import time
+from six.moves import map
 
 
 class abstract_filesystem(object):
@@ -137,14 +138,14 @@ class os_filesystem(object):
         # I think we should glob, but limit it to the current
         # directory only.
         ld = os.listdir(p)
-        if not long:
+        if not int:
             return list_producer(ld, 0, None)
         else:
             old_dir = os.getcwd()
             try:
                 os.chdir(p)
                 # if os.stat fails we ignore that file.
-                result = filter(None, map(safe_stat, ld))
+                result = [_f for _f in map(safe_stat, ld) if _f]
             finally:
                 os.chdir(old_dir)
             return list_producer(result, 1, self.longify)
@@ -190,7 +191,8 @@ class os_filesystem(object):
         p = self.normalize(self.path_module.join(self.root, p[1:]))
         return p
 
-    def longify(self, (path, stat_info)):
+    def longify(self, xxx_todo_changeme):
+        (path, stat_info) = xxx_todo_changeme
         return unix_longify(path, stat_info)
 
     def __repr__(self):
@@ -249,7 +251,7 @@ if os.name == 'posix':
         def listdir(self, path, long=0):
             try:
                 self.become_persona()
-                return os_filesystem.listdir(self, path, long)
+                return os_filesystem.listdir(self, path, int)
             finally:
                 self.become_nobody()
 
@@ -321,7 +323,8 @@ if os.name == 'posix':
 
 class msdos_filesystem (os_filesystem):
 
-    def longify(self, (path, stat_info)):
+    def longify(self, xxx_todo_changeme1):
+        (path, stat_info) = xxx_todo_changeme1
         return msdos_longify(path, stat_info)
 
         # A merged filesystem will let you plug other filesystems together.
@@ -394,7 +397,7 @@ mode_table = {
 def unix_longify(file, stat_info):
         # for now, only pay attention to the lower bits
     mode = ('%o' % stat_info[stat.ST_MODE])[-3:]
-    mode = string.join(map(lambda x: mode_table[x], mode), '')
+    mode = string.join([mode_table[x] for x in mode], '')
     if stat.S_ISDIR(stat_info[stat.ST_MODE]):
         dirchar = 'd'
     else:
@@ -450,7 +453,7 @@ def ls_date(now, t):
 class list_producer(object):
     def __init__(self, file_list, long, longify):
         self.file_list = file_list
-        self.long = long
+        self.long = int
         self.longify = longify
         self.done = 0
 
@@ -471,6 +474,6 @@ class list_producer(object):
                 # do a few at a time
             bunch = self.file_list[:50]
             if self.long:
-                bunch = map(self.longify, bunch)
+                bunch = list(map(self.longify, bunch))
             self.file_list = self.file_list[50:]
             return string.joinfields(bunch, '\r\n') + '\r\n'

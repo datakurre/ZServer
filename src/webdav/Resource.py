@@ -16,7 +16,7 @@
 import mimetypes
 import sys
 import re
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 from AccessControl import getSecurityManager
 from AccessControl import ClassSecurityInfo
@@ -63,6 +63,7 @@ from webdav.common import tokenFinder
 from webdav.common import urlbase
 from webdav.common import urlfix
 from webdav.interfaces import IDAVResource
+from six.moves import map
 
 ms_dav_agent = re.compile("Microsoft.*Internet Publishing.*")
 
@@ -162,7 +163,7 @@ class Resource(Base, LockableItem):
 
             if not tag.resource:
                 # There's no resource (url) with this tag
-                tag_list = map(tokenFinder, tag.list)
+                tag_list = list(map(tokenFinder, tag.list))
                 wehave = [t for t in tag_list if self.wl_hasLock(t)]
 
                 if not wehave:
@@ -177,7 +178,7 @@ class Resource(Base, LockableItem):
                 break
             elif urlbase(tag.resource) == url:
                 resourcetagged = 1
-                tag_list = map(tokenFinder, tag.list)
+                tag_list = list(map(tokenFinder, tag.list))
                 wehave = [t for t in tag_list if self.wl_hasLock(t)]
 
                 if not wehave:
@@ -208,7 +209,7 @@ class Resource(Base, LockableItem):
             content_type = absattr(self.content_type)
         if content_type is None:
             url = urlfix(REQUEST['URL'], 'HEAD')
-            name = unquote(filter(None, url.split('/')[-1]))
+            name = unquote([_f for _f in url.split('/')[-1] if _f])
             content_type, encoding = mimetypes.guess_type(name)
         if content_type is None:
             if hasattr(self, 'default_content_type'):
@@ -273,7 +274,7 @@ class Resource(Base, LockableItem):
         self.dav__init(REQUEST, RESPONSE)
         ifhdr = REQUEST.get_header('If', '')
         url = urlfix(REQUEST['URL'], 'DELETE')
-        name = unquote(filter(None, url.split('/')[-1]))
+        name = unquote([_f for _f in url.split('/')[-1] if _f])
         parent = aq_parent(aq_inner(self))
         # Lock checking
         if wl_isLocked(self):
