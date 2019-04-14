@@ -23,8 +23,10 @@ import socket
 
 import ZConfig
 from ZConfig.components.logger import loghandler
+from twisted.application.service import MultiService
 from zope.event import notify
 from zope.processlifetime import ProcessStarting
+import twisted.internet.reactor
 import ZServer.Zope2.Startup.config
 
 try:
@@ -85,7 +87,6 @@ class ZopeStarter(object):
         self.serverListen()
         from App.config import getConfiguration
         config = getConfiguration()  # NOQA
-        self.registerSignals()
         logger.info('Ready to handle requests')
         if _SD_NOTIFY_READINESS:
             SystemdNotifier().notify('READY=1')
@@ -99,11 +100,10 @@ class ZopeStarter(object):
         # the mainloop.
         try:
             from App.config import getConfiguration
-            config = getConfiguration()  # NOQA
-            import Lifetime
-            Lifetime.loop()
-            from ZServer.Zope2.Startup.config import ZSERVER_EXIT_CODE
-            sys.exit(ZSERVER_EXIT_CODE)
+            twisted.internet.reactor.run()
+            # Storing the exit code in the ZServer even for twisted,
+            # but hey, it works...
+            sys.exit(ZServer.exit_code)
         finally:
             self.shutdown()
 
@@ -245,15 +245,25 @@ class ZopeStarter(object):
             'port may already be in use by another application. '
             '(%s)')
         servers = []
+
+        # Create a root service
+        rootService = MultiService()
+
         for server in self.cfg.servers:
             # create the server from the server factory
             # set up in the config
             try:
-                servers.append(server.create())
+                service = server.create()
+                service.setServiceParent(rootService)
+                servers.append(service)
             except socket.error as e:
                 raise ZConfig.ConfigurationError(
                     socket_err % (server.servertype(), e[1]))
         self.cfg.servers = servers
+
+        rootService.startService()
+        twisted.internet.reactor.addSystemEventTrigger(
+            'before', 'shutdown', rootService.stopService)
 
     def makeLockFile(self):
         if not self.cfg.zserver_read_only_mode:

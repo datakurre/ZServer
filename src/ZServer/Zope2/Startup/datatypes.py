@@ -13,9 +13,9 @@
 ##############################################################################
 """Datatypes for the Zope schema for use with ZConfig."""
 
-import cStringIO
+from io import StringIO
 import os
-from UserDict import UserDict
+from six.moves import UserDict
 import traceback
 
 from ZConfig.components.logger import logger

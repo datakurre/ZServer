@@ -15,9 +15,19 @@
 
 Each server type is represented by a ServerFactory instance.
 """
+from __future__ import absolute_import
 
 import socket
 import ZConfig
+import twisted.web.wsgi
+from twisted.application.service import Service
+from twisted.internet import reactor, ssl, protocol
+from ZPublisher.WSGIPublisher import publish_module
+from twisted.internet.endpoints import TCP4ServerEndpoint, SSL4ServerEndpoint, \
+    serverFromString
+from twisted.python.modules import getModule
+from twisted.web.http import HTTPFactory
+from twisted.web.server import Site
 
 
 class ServerFactory(object):
@@ -59,7 +69,38 @@ class ServerFactory(object):
             "Concrete ServerFactory classes must implement create().")
 
 
-class HTTPServerFactory(ServerFactory):
+class HTTPServerFactory(Service, ServerFactory):
+    def __init__(self, section):
+        if not section.address:
+            raise ZConfig.ConfigurationError(
+                "No 'address' settings found "
+                "within the 'http-server' or 'webdav-source-server' section")
+        ServerFactory.__init__(self, section.address)
+
+    def create(self):
+        resource = twisted.web.wsgi.WSGIResource(
+            reactor=reactor,
+            threadpool=reactor.getThreadPool(),
+            application=publish_module,
+        )
+        site = Site(resource)
+#       endpoint = TCP4ServerEndpoint(
+#           twisted.internet.reactor,
+#           self.port,
+#           50,
+#           self.host,
+#       )
+        import os.path
+        base = os.path.dirname(__file__)
+        endpoint = serverFromString(
+            twisted.internet.reactor,
+            f'ssl:port=8080:privateKey={base}/privkey.pem:certKey={base}/cert.pem'
+        )
+        endpoint.listen(site)
+        return self
+
+
+class LegacyHTTPServerFactory(ServerFactory):
 
     def __init__(self, section):
         from ZServer import HTTPServer

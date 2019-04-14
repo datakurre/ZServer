@@ -20,7 +20,7 @@ from __future__ import absolute_import
 
 from ZPublisher.HTTPRequest import HTTPRequest
 
-from cStringIO import StringIO
+from io import StringIO
 import os
 from base64 import encodestring
 import re

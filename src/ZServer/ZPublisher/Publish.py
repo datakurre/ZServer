@@ -14,9 +14,15 @@
 """
 import os
 import sys
-from thread import allocate_lock
+try:
+    from _thread import allocate_lock
+except ImportError:
+    from thread import allocate_lock
 import transaction
-from urlparse import urlparse
+try:
+    from urllib import parse
+except ImportError:
+    from urlparse import urlparse
 
 from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager

@@ -4,6 +4,7 @@ import sys
 import time
 
 from Signals.threads import dump_threads
+from twisted.internet import reactor
 
 # Optional systemd sd_notify() watchdog support
 try:
@@ -46,6 +47,7 @@ def shutdown(exit_code, fast=0):
         from ZServer.Zope2.Startup import config
         config.ZSERVER_EXIT_CODE = exit_code
         _shutdown_phase = 1
+        reactor.callLater(0.1, reactor.stop)
     if fast:
         # Someone wants us to shutdown fast. This is hooked into SIGTERM - so
         # possibly the system is going down and we can expect a SIGKILL within
