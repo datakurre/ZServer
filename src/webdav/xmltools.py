@@ -31,11 +31,13 @@ TODO:
 
 """
 
-from io import StringIO
+from io import StringIO, BytesIO
 from xml.dom import minidom
 from xml.sax.expatreader import ExpatParser
 from xml.sax.saxutils import escape as _escape
 from xml.sax.saxutils import unescape as _unescape
+
+import six
 
 escape_entities = {'"': '&quot;',
                    "'": '&apos;',
@@ -226,5 +228,14 @@ class XmlParser(object):
         pass
 
     def parse(self, data):
-        self.dom = minidom.parseString(data, parser=ProtectedExpatParser())
+        if isinstance(data, bytes):
+            self.dom = minidom.parse(
+                BytesIO(data),
+                parser=ProtectedExpatParser(),
+            )
+        else:
+            self.dom = minidom.parseString(
+                data,
+                parser=ProtectedExpatParser(),
+            )
         return Node(self.dom)

@@ -9,7 +9,7 @@
   </abstracttype>
 
   <sectiontype name="http-server"
-               datatype=".HTTPServerFactory"
+               datatype=".TwistedHTTPServerFactory"
                implements="ZServer.server">
      <key name="address" datatype="inet-binding-address"/>
      <key name="force-connection-close" datatype="boolean" default="off"/>
@@ -29,7 +29,7 @@
   </sectiontype>
 
   <sectiontype name="webdav-source-server"
-               datatype=".WebDAVSourceServerFactory"
+               datatype=".TwistedWebDAVSourceServerFactory"
                implements="ZServer.server">
      <key name="address" datatype="inet-binding-address"/>
      <key name="force-connection-close" datatype="boolean" default="off"/>

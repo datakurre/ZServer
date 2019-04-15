@@ -22,10 +22,14 @@ import socket
 import ZConfig
 import twisted.web.wsgi
 from ZPublisher.WSGIPublisher import publish_module
+from ZServer.TwistedHTTPServer import TwistedHTTPServer
 from twisted.application.service import Service
 from twisted.internet import reactor
 from twisted.internet.endpoints import serverFromString
 from twisted.web.server import Site
+from twisted.web.wsgi import WSGIResource
+
+from ZServer.TwistedWebDavServer import TwistedWebDAVServer
 
 
 class ServerFactory(object):
@@ -67,39 +71,79 @@ class ServerFactory(object):
             "Concrete ServerFactory classes must implement create().")
 
 
-class HTTPServerFactory(Service, ServerFactory):
+class TwistedHTTPServerFactory(Service, ServerFactory):
     def __init__(self, section):
         if not section.address:
             raise ZConfig.ConfigurationError(
                 "No 'address' settings found "
                 "within the 'http-server' or 'webdav-source-server' section")
         ServerFactory.__init__(self, section.address)
+        self.force_connection_close = section.force_connection_close
+        # webdav-source-server sections won't have webdav_source_clients:
+        webdav_clients = getattr(section, "webdav_source_clients", None)
+        self.fast_listen = getattr(section, 'fast_listen', True)
+        self.webdav_source_clients = webdav_clients
+        self.use_wsgi = section.use_wsgi
 
     def create(self):
-        resource = twisted.web.wsgi.WSGIResource(
-            reactor=reactor,
-            threadpool=reactor.getThreadPool(),
-            application=publish_module,
-        )
+        if self.use_wsgi:
+            resource = WSGIResource(
+                reactor=reactor,
+                threadpool=reactor.getThreadPool(),
+                application=publish_module,
+            )
+        else:
+            resource = TwistedHTTPServer(
+                reactor=reactor,
+                threadpool=reactor.getThreadPool(),
+                publish_module=publish_module,
+            )
         site = Site(resource)
-#       endpoint = TCP4ServerEndpoint(
-#           twisted.internet.reactor,
-#           self.port,
-#           50,
-#           self.host,
-#       )
-        import os.path
-        base = os.path.dirname(__file__)
         endpoint = serverFromString(
             twisted.internet.reactor,
-            'tcp:port=8080'
-#           f'ssl:port=8080:privateKey={base}/privkey.pem:certKey={base}/cert.pem'
+            'tcp:port={port}'.format(port=self.port),
         )
         endpoint.listen(site)
         return self
 
 
-class LegacyHTTPServerFactory(ServerFactory):
+class TwistedWebDAVSourceServerFactory(Service, ServerFactory):
+    def __init__(self, section):
+        if not section.address:
+            raise ZConfig.ConfigurationError(
+                "No 'address' settings found "
+                "within the 'http-server' or 'webdav-source-server' section")
+        ServerFactory.__init__(self, section.address)
+        self.force_connection_close = section.force_connection_close
+        # webdav-source-server sections won't have webdav_source_clients:
+        webdav_clients = getattr(section, "webdav_source_clients", None)
+        self.fast_listen = getattr(section, 'fast_listen', True)
+        self.webdav_source_clients = webdav_clients
+        self.use_wsgi = section.use_wsgi
+
+    def create(self):
+        if self.use_wsgi:
+            resource = WSGIResource(
+                reactor=reactor,
+                threadpool=reactor.getThreadPool(),
+                application=publish_module,
+            )
+        else:
+            resource = TwistedWebDAVServer(
+                reactor=reactor,
+                threadpool=reactor.getThreadPool(),
+                publish_module=publish_module,
+            )
+        site = Site(resource)
+        endpoint = serverFromString(
+            twisted.internet.reactor,
+            'tcp:port={port}'.format(port=self.port),
+        )
+        endpoint.listen(site)
+        return self
+
+
+class HTTPServerFactory(ServerFactory):
 
     def __init__(self, section):
         from ZServer import HTTPServer
