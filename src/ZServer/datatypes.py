@@ -20,14 +20,14 @@ from __future__ import absolute_import
 import socket
 
 import ZConfig
-import twisted.web.wsgi
+import twisted.internet
 from ZPublisher.WSGIPublisher import publish_module
 from ZServer.TwistedHTTPServer import TwistedHTTPServer
 from twisted.application.service import Service
-from twisted.internet import reactor
 from twisted.internet.endpoints import serverFromString
 from twisted.web.server import Site
 from twisted.web.wsgi import WSGIResource
+
 
 from ZServer.TwistedWebDavServer import TwistedWebDAVServer
 
@@ -88,14 +88,14 @@ class TwistedHTTPServerFactory(Service, ServerFactory):
     def create(self):
         if self.use_wsgi:
             resource = WSGIResource(
-                reactor=reactor,
-                threadpool=reactor.getThreadPool(),
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
                 application=publish_module,
             )
         else:
             resource = TwistedHTTPServer(
-                reactor=reactor,
-                threadpool=reactor.getThreadPool(),
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
                 publish_module=publish_module,
             )
         site = Site(resource)
@@ -124,14 +124,14 @@ class TwistedWebDAVSourceServerFactory(Service, ServerFactory):
     def create(self):
         if self.use_wsgi:
             resource = WSGIResource(
-                reactor=reactor,
-                threadpool=reactor.getThreadPool(),
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
                 application=publish_module,
             )
         else:
             resource = TwistedWebDAVServer(
-                reactor=reactor,
-                threadpool=reactor.getThreadPool(),
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
                 publish_module=publish_module,
             )
         site = Site(resource)

@@ -22,11 +22,11 @@ import sys
 import socket
 
 import ZConfig
+import twisted.internet
 from ZConfig.components.logger import loghandler
 from twisted.application.service import MultiService
 from zope.event import notify
 from zope.processlifetime import ProcessStarting
-import twisted.internet.reactor
 import ZServer.Zope2.Startup.config
 
 try:
@@ -222,11 +222,23 @@ class ZopeStarter(object):
             self.cfg.verbose_security)
 
     def setupZServer(self):
+        try:
+            try:
+                import uvloop
+                uvloop.install()
+            except ImportError:
+                pass
+            import twisted.internet.asyncioreactor
+            twisted.internet.asyncioreactor.install()
+        except ImportError:
+            import twisted.internet.reactor
         # Increase the number of threads
         ZServer.Zope2.Startup.config.setNumberOfThreads(
             self.cfg.zserver_threads)
         ZServer.Zope2.Startup.config.ZSERVER_CONNECTION_LIMIT = \
             self.cfg.max_listen_sockets
+        twisted.internet.reactor.suggestThreadPoolSize(
+            self.cfg.zserver_threads)
 
     def serverListen(self):
         for server in self.cfg.servers:

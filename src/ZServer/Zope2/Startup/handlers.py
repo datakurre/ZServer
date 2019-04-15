@@ -19,17 +19,6 @@ from socket import gethostbyaddr
 
 from ZServer.Zope2.Startup import config
 
-import twisted.internet
-from twisted.application.service import MultiService
-
-import twisted.web.wsgi
-import twisted.web.server
-# import twisted.web.log
-from twisted.web.http import HTTPFactory
-
-from zope.component import provideUtility
-from ZPublisher.WSGIPublisher import publish_module
-
 
 def _setenv(name, value):
     if isinstance(value, str):
@@ -140,9 +129,6 @@ def root_handler(cfg):
         # if no servers are defined, create default servers
         if not cfg.servers:
             cfg.servers = []
-
-        # Set number of threads (reuse zserver_threads variable)
-        twisted.internet.reactor.suggestThreadPoolSize(cfg.zserver_threads)
 
     # set up trusted proxies
     if cfg.trusted_proxies:
