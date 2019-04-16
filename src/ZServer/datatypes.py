@@ -23,7 +23,10 @@ import ZConfig
 import twisted.internet
 from ZPublisher.WSGIPublisher import publish_module
 from ZServer.TwistedHTTPServer import TwistedHTTPServer
+from ZServer.TwistedSSHServer import TwistedSSHServer, ExampleRealm
 from twisted.application.service import Service
+from twisted.conch.checkers import SSHPublicKeyChecker, InMemorySSHKeyDB
+from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse
 from twisted.internet.endpoints import serverFromString
 from twisted.web.server import Site
 from twisted.web.wsgi import WSGIResource
@@ -69,6 +72,28 @@ class ServerFactory(object):
     def create(self):
         raise NotImplementedError(
             "Concrete ServerFactory classes must implement create().")
+
+
+class TwistedSSHServerFactory(Service, ServerFactory):
+    def __init__(self, section):
+        if not section.address:
+            raise ZConfig.ConfigurationError(
+                "No 'address' settings found "
+                "within the 'ssh-server'")
+        ServerFactory.__init__(self, section.address)
+
+    def create(self):
+        from twisted.cred import portal
+        portal = portal.Portal(ExampleRealm())
+        passwdDB = InMemoryUsernamePasswordDatabaseDontUse()
+        passwdDB.addUser(b'user', b'password')
+        # sshDB = SSHPublicKeyChecker(InMemorySSHKeyDB(
+        #     {b'user': [keys.Key.fromFile(CLIENT_RSA_PUBLIC)]}))
+        portal.registerChecker(passwdDB)
+        # portal.registerChecker(sshDB)
+        TwistedSSHServer.portal = portal
+        twisted.internet.reactor.listenTCP(self.port, TwistedSSHServer())
+        return self
 
 
 class TwistedHTTPServerFactory(Service, ServerFactory):

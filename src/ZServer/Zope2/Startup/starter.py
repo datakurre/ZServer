@@ -25,6 +25,7 @@ import ZConfig
 import twisted.internet
 from ZConfig.components.logger import loghandler
 from twisted.application.service import MultiService
+from twisted.internet.error import ReactorAlreadyInstalledError
 from zope.event import notify
 from zope.processlifetime import ProcessStarting
 import ZServer.Zope2.Startup.config
@@ -230,7 +231,7 @@ class ZopeStarter(object):
                 pass
             import twisted.internet.asyncioreactor
             twisted.internet.asyncioreactor.install()
-        except ImportError:
+        except (ImportError, ReactorAlreadyInstalledError):
             import twisted.internet.reactor
         # Increase the number of threads
         ZServer.Zope2.Startup.config.setNumberOfThreads(

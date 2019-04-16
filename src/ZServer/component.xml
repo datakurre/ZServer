@@ -28,6 +28,12 @@
      <key name="use-wsgi" datatype="boolean" default="off" />
   </sectiontype>
 
+  <sectiontype name="ssh-server"
+               datatype=".TwistedSSHServerFactory"
+               implements="ZServer.server">
+      <key name="address" datatype="inet-binding-address"/>
+  </sectiontype>
+
   <sectiontype name="webdav-source-server"
                datatype=".TwistedWebDAVSourceServerFactory"
                implements="ZServer.server">
