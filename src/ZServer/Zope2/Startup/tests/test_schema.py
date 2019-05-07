@@ -13,11 +13,11 @@
 ##############################################################################
 
 import os
-import cStringIO
 import tempfile
 import unittest
 
 import ZConfig
+from io import StringIO
 
 from ZServer.Zope2.Startup.options import ZopeOptions
 
@@ -47,7 +47,7 @@ class StartupTestCase(unittest.TestCase):
         # of the directory is checked.  This handles this in a
         # platform-independent way.
         schema = self.schema
-        sio = cStringIO.StringIO(
+        sio = StringIO(
             text.replace("<<INSTANCE_HOME>>", TEMPNAME))
         os.mkdir(TEMPNAME)
         os.mkdir(TEMPVAR)
@@ -77,7 +77,7 @@ class StartupTestCase(unittest.TestCase):
               NSYNC doesnt
             </environment>
             """)
-        items = conf.environment.items()
+        items = list(conf.environment.items())
         items.sort()
         self.assertEqual(
             items, [("FEARFACTORY", "rocks"), ("NSYNC", "doesnt")])

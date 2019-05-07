@@ -4,6 +4,7 @@
 # [quick translation of scheme48/big/queue.scm]
 
 
+from __future__ import print_function
 class fifo(object):
 
     def __init__(self):
@@ -81,8 +82,8 @@ class protected_fifo(object):
 
     def __init__(self, lock=None):
         if lock is None:
-            import thread
-            self.lock = thread.allocate_lock()
+            import six.moves._thread
+            self.lock = six.moves._thread.allocate_lock()
         else:
             self.lock = lock
         self.fifo = fifo.fifo()
@@ -203,4 +204,4 @@ def test_embedded():
     of.push('six')
     of.push('seven')
     while 1:
-        print(of.pop())
+        print((of.pop()))

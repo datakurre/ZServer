@@ -27,6 +27,7 @@ from Acquisition import aq_base
 import transaction
 
 from Testing.ZopeTestCase import layer
+from six.moves import range
 
 _Z2HOST = None
 _Z2PORT = None
@@ -110,7 +111,7 @@ def startZServer(number_of_threads=1, log=None):
     global _Z2HOST, _Z2PORT
     if _Z2HOST is None:
         _Z2HOST = '127.0.0.1'
-        _Z2PORT = random.choice(range(55000, 55500))
+        _Z2PORT = random.choice(list(range(55000, 55500)))
         from ZServer.Testing.threadutils import setNumberOfThreads
         setNumberOfThreads(number_of_threads)
         from ZServer.Testing.threadutils import QuietThread, zserverRunner

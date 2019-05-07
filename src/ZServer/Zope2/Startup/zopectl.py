@@ -36,6 +36,7 @@ action "help" to find out about available actions.
 """
 from __future__ import absolute_import
 
+from __future__ import print_function
 import csv
 import os
 import sys
@@ -48,9 +49,10 @@ from zdaemon.zdctl import ZDCmd, ZDCtlOptions
 from ZConfig.components.logger.handlers import FileHandlerFactory
 
 from ZServer.Zope2.Startup.options import ZopeOptions
+import six
 
 if sys.version_info > (3, ):
-    basestring = str
+    six.string_types = str
 
 WIN = False
 if sys.platform[:3].lower() == "win":
@@ -62,7 +64,7 @@ def string_list(arg):
 
 
 def quote_command(command):
-    print(" ".join(command))
+    print((" ".join(command)))
     # Quote the program name, so it works even if it contains spaces
     command = " ".join(['"%s"' % x for x in command])
     if WIN:
@@ -131,7 +133,7 @@ class ZopeCtlOptions(ZopeOptions, ZDCtlOptions):
         self.directory = config.instancehome
         self.clienthome = config.clienthome
         if self.program:
-            if isinstance(self.program, basestring):
+            if isinstance(self.program, six.string_types):
                 self.program = [self.program]
         elif config.runner and config.runner.program:
             self.program = config.runner.program
@@ -257,7 +259,7 @@ class ZopeCmd(ZDCmd):
             # so that we can split on spaces while respecting quotes.
             tup = self.options.args
             if len(tup) == 1:
-                tup = csv.reader(tup, delimiter=' ').next()
+                tup = next(csv.reader(tup, delimiter=' '))
 
             # Remove -c and add command name as sys.argv[0]
             cmd = ['import sys',
@@ -338,7 +340,7 @@ def main(args=None):
             import readline  # NOQA
         except ImportError:
             pass
-        print("program:" + " ".join(options.program))
+        print(("program:" + " ".join(options.program)))
         c.do_status()
         c.cmdloop()
     else:

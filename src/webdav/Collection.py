@@ -13,7 +13,7 @@
 """WebDAV support - collection objects.
 """
 
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 from AccessControl.class_init import InitializeClass
 from AccessControl.Permissions import delete_objects
@@ -30,6 +30,7 @@ from webdav.common import PreconditionFailed
 from webdav.common import urlfix
 from webdav.interfaces import IDAVCollection
 from webdav.Resource import Resource
+from six.moves import filter
 
 
 @implementer(IDAVCollection)
@@ -89,7 +90,7 @@ class Collection(Resource):
         self.dav__init(REQUEST, RESPONSE)
         ifhdr = REQUEST.get_header('If', '')
         url = urlfix(REQUEST['URL'], 'DELETE')
-        name = unquote(filter(None, url.split('/'))[-1])
+        name = unquote([_f for _f in url.split('/') if _f][-1])
         parent = self.aq_parent
         sm = getSecurityManager()
         token = None

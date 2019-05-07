@@ -31,7 +31,6 @@ from __future__ import absolute_import
 
 import asynchat
 import asyncore
-from cStringIO import StringIO
 from tempfile import TemporaryFile
 import socket
 import string
@@ -55,6 +54,10 @@ from ZServer.Producers import (
 )
 from ZServer import DebugLogger
 from ZServer.Zope2.Startup import config
+import six
+
+from io import StringIO
+
 
 tz_for_log = compute_timezone_for_log()
 
@@ -115,10 +118,10 @@ class PCGIChannel(asynchat.async_chat):
             if 'SERVER_SOFTWARE' in self.env and \
                     string.find(self.env['SERVER_SOFTWARE'],
                                 'Microsoft-IIS') != -1:
-                script = filter(None, string.split(
-                    string.strip(self.env['SCRIPT_NAME']), '/'))
-                path = filter(None, string.split(
-                    string.strip(self.env['PATH_INFO']), '/'))
+                script = [_f for _f in string.split(
+                    string.strip(self.env['SCRIPT_NAME']), '/') if _f]
+                path = [_f for _f in string.split(
+                    string.strip(self.env['PATH_INFO']), '/') if _f]
                 self.env['PATH_INFO'] = '/' + string.join(
                     path[len(script):], '/')
             self.data = StringIO()
@@ -218,7 +221,7 @@ class PCGIChannel(asynchat.async_chat):
         self.closed = 1
         while self.producer_fifo:
             p = self.producer_fifo.first()
-            if p is not None and not isinstance(p, basestring):
+            if p is not None and not isinstance(p, six.string_types):
                 p.more()  # free up resources held by producer
             self.producer_fifo.pop()
         asyncore.dispatcher.close(self)

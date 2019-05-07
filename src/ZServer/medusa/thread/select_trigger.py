@@ -1,12 +1,13 @@
 # -*- Mode: Python; tab-width: 4 -*-
 
+from __future__ import print_function
 import asyncore
 import asynchat
 
 import os
 import socket
 import string
-import thread
+import six.moves._thread
 import errno
 
 VERSION_STRING = "$Id$"
@@ -49,7 +50,7 @@ if os.name == 'posix':
             r, w = os.pipe()
             self.trigger = w
             asyncore.file_dispatcher.__init__(self, r)
-            self.lock = thread.allocate_lock()
+            self.lock = six.moves._thread.allocate_lock()
             self.thunks = []
 
         def __repr__(self):
@@ -84,8 +85,8 @@ if os.name == 'posix':
                     except:
                         (file, fun, line), t, v, tbinfo = \
                             asyncore.compact_traceback()
-                        print('exception in trigger thunk: (%s:%s %s)' % (
-                              t, v, tbinfo))
+                        print(('exception in trigger thunk: (%s:%s %s)' % (
+                              t, v, tbinfo)))
                 self.thunks = []
             finally:
                 self.lock.release()
@@ -155,7 +156,7 @@ else:
             self.trigger = w
             asyncore.dispatcher.__init__(self, r)
 
-            self.lock = thread.allocate_lock()
+            self.lock = six.moves._thread.allocate_lock()
             self.thunks = []
             self._trigger_connected = 0
 
@@ -190,8 +191,8 @@ else:
                     except:
                         (file, fun, line), t, v, tbinfo = \
                             asyncore.compact_traceback()
-                        print('exception in trigger thunk: (%s:%s %s)' %
-                              (t, v, tbinfo))
+                        print(('exception in trigger thunk: (%s:%s %s)' %
+                              (t, v, tbinfo)))
                 self.thunks = []
             finally:
                 self.lock.release()
@@ -288,7 +289,7 @@ if __name__ == '__main__':
             n = string.atoi(string.split(data)[0])
             tf = trigger_file(self)
             self.count = self.count + 1
-            thread.start_new_thread(thread_function, (tf, self.count, n))
+            six.moves._thread.start_new_thread(thread_function, (tf, self.count, n))
 
     class thread_server(asyncore.dispatcher):
 

@@ -4,6 +4,7 @@
 # Copyright 1997-2000 by Sam Rushing
 # All Rights Reserved.
 
+from __future__ import print_function
 import string
 import socket
 import asyncore
@@ -54,7 +55,7 @@ class chat_channel(asynchat.async_chat):
         else:
             self.push('[There are %d other callers]\r\n' % (
                 len(self.server.channels) - 1))
-            nicks = map(lambda x: x.get_nick(), self.server.channels.keys())
+            nicks = [x.get_nick() for x in list(self.server.channels.keys())]
             self.push(string.join(nicks, '\r\n  ') + '\r\n')
             self.server.push_line(self, '[joined]')
 
@@ -106,7 +107,7 @@ class chat_server(asyncore.dispatcher):
         self.port = port
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.bind((ip, port))
-        print('%s started on port %d' % (self.SERVER_IDENT, port))
+        print(('%s started on port %d' % (self.SERVER_IDENT, port)))
         self.listen(5)
         self.channels = {}
         self.count = 0
@@ -114,13 +115,13 @@ class chat_server(asyncore.dispatcher):
     def handle_accept(self):
         conn, addr = self.accept()
         self.count = self.count + 1
-        print('client #%d - %s:%d' % (self.count, addr[0], addr[1]))
+        print(('client #%d - %s:%d' % (self.count, addr[0], addr[1])))
         self.channels[self.channel_class(self, conn, addr)] = 1
 
     def push_line(self, from_channel, line):
         nick = from_channel.get_nick()
         if self.spy:
-            print('%s: %s' % (nick, line))
+            print(('%s: %s' % (nick, line)))
         for c in self.channels.keys():
             if c is not from_channel:
                 c.push('%s: %s\r\n' % (nick, line))

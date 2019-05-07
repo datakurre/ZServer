@@ -5,6 +5,7 @@
 # Copyright 1996-2000 by Sam Rushing
 # All Rights Reserved.
 
+from __future__ import print_function
 import asyncore
 import asynchat
 import base64
@@ -13,12 +14,14 @@ import socket
 import string
 import sys
 import time
-from urllib import unquote
+from six.moves.urllib.parse import unquote
 
 from .counter import counter
 from . import http_date
 from . import logger
 from . import producers
+from six.moves import map
+from six.moves import range
 
 RCS_ID = '$Id$'
 VERSION_STRING = '0.0'
@@ -88,9 +91,7 @@ class http_request(object):
 
     def build_reply_header(self):
         return string.join(
-            [self.response(self.reply_code)] + map(
-                lambda x: '%s: %s' % x,
-                self.reply_headers.items()),
+            [self.response(self.reply_code)] + ['%s: %s' % x for x in list(self.reply_headers.items())],
             '\r\n'
         ) + '\r\n\r\n'
 
@@ -648,7 +649,7 @@ class http_server(asyncore.dispatcher):
             from .status_handler import english_bytes
             return string.join(english_bytes(n))
 
-        handler_stats = filter(None, map(maybe_status, self.handlers))
+        handler_stats = [_f for _f in map(maybe_status, self.handlers) if _f]
 
         if self.total_clients:
             ratio = (self.total_requests.as_long() /
@@ -783,7 +784,7 @@ tz_for_log = compute_timezone_for_log()
 if __name__ == '__main__':
     from .status_handler import status_extension
     if len(sys.argv) < 2:
-        print('usage: %s <root> <port>' % (sys.argv[0]))
+        print(('usage: %s <root> <port>' % (sys.argv[0])))
     else:
         from . import monitor
         from . import filesys
