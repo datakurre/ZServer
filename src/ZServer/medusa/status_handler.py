@@ -11,6 +11,8 @@ from .http_server import http_channel
 from . import logger
 from . import medusa_gif
 from . import producers
+from six.moves import map
+from six.moves import range
 
 
 VERSION_STRING = "$Id$"
@@ -203,10 +205,7 @@ class lines_producer(object):
 class channel_list_producer (lines_producer):
 
     def __init__(self, statusdir):
-        channel_reprs = map(
-            lambda x: '&lt;' + repr(x)[1:-1] + '&gt;',
-            asyncore.socket_map.values()
-        )
+        channel_reprs = ['&lt;' + repr(x)[1:-1] + '&gt;' for x in list(asyncore.socket_map.values())]
         channel_reprs.sort()
         lines_producer.__init__(
             self,
@@ -237,10 +236,10 @@ def html_repr(object):
 
 
 def html_reprs(list, front='', back=''):
-    reprs = map(
+    reprs = list(map(
         lambda x, f=front, b=back: '%s%s%s' % (f, x, b),
-        map(lambda x: sanitize(html_repr(x)), list)
-    )
+        [sanitize(html_repr(x)) for x in list]
+    ))
     reprs.sort()
     return reprs
 

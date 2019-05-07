@@ -4,18 +4,21 @@
 # since we can't do select() on stdin/stdout, we simply
 # use threads and blocking sockets.  <sigh>
 
+from __future__ import print_function
 from hashlib import md5
 import socket
 import string
 import sys
-import thread
+import six.moves._thread
+from six.moves import map
+from six.moves import input
 
 
 def hex_digest(s):
     m = md5()
     m.update(s)
     return string.join(
-        map(lambda x: hex(ord(x))[2:], map(None, m.digest())),
+        [hex(ord(x))[2:] for x in list(m.digest())],
         '',
     )
 
@@ -29,7 +32,7 @@ def reader(lock, sock, password):
         if not d:
             lock.release()
             print('Connection closed.  Hit <return> to exit')
-            thread.exit()
+            six.moves._thread.exit()
         sys.stdout.write(d)
         sys.stdout.flush()
 
@@ -46,10 +49,10 @@ if __name__ == '__main__':
         print('Usage: %s host port')
         sys.exit(0)
     print('Enter Password: \n')
-    p = raw_input()
+    p = input()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((sys.argv[1], string.atoi(sys.argv[2])))
-    l = thread.allocate_lock()
+    l = six.moves._thread.allocate_lock()
     l.acquire()
-    thread.start_new_thread(reader, (l, s, p))
+    six.moves._thread.start_new_thread(reader, (l, s, p))
     writer(l, s)

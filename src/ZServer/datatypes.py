@@ -15,6 +15,7 @@
 
 Each server type is represented by a ServerFactory instance.
 """
+from __future__ import absolute_import
 
 import socket
 import ZConfig

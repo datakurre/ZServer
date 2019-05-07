@@ -6,12 +6,16 @@
 
 # see rfc1035 for details
 
+from __future__ import print_function
 import string
 import asyncore
 import socket
 import sys
 import time
 from counter import counter
+from six.moves import map
+from six.moves import range
+from functools import reduce
 
 RCS_ID = '$Id$'
 VERSION = '0.0'
@@ -53,10 +57,7 @@ def fast_address_request(host, id=0):
         '%c%c' % (chr((id >> 8) & 0xff), chr(id & 0xff)) +
         '\001\000\000\001\000\000\000\000\000\000%s\000\000\001\000\001' % (
             string.join(
-                map(
-                    lambda part: '%c%s' % (chr(len(part)), part),
-                    string.split(host, '.')
-                ), ''
+                ['%c%s' % (chr(len(part)), part) for part in string.split(host, '.')], ''
             )
         )
     )
@@ -67,10 +68,7 @@ def fast_ptr_request(host, id=0):
         '%c%c' % (chr((id >> 8) & 0xff), chr(id & 0xff)) +
         '\001\000\000\001\000\000\000\000\000\000%s\000\000\014\000\001' % (
             string.join(
-                map(
-                    lambda part: '%c%s' % (chr(len(part)), part),
-                    string.split(host, '.')
-                ), ''
+                ['%c%s' % (chr(len(part)), part) for part in string.split(host, '.')], ''
             )
         )
     )
@@ -109,7 +107,7 @@ def skip_name(r, pos):
 def unpack_ttl(r, pos):
     return reduce(
         lambda x, y: (x << 8) | y,
-        map(ord, r[pos:pos + 4])
+        list(map(ord, r[pos:pos + 4]))
     )
 
 
@@ -377,7 +375,7 @@ class caching_resolver(resolver):
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print('usage: %s [-r] [-s <server_IP>] host [host ...]' % sys.argv[0])
+        print(('usage: %s [-r] [-s <server_IP>] host [host ...]' % sys.argv[0]))
         sys.exit(0)
     elif ('-s' in sys.argv):
         i = sys.argv.index('-s')
@@ -408,7 +406,7 @@ if __name__ == '__main__':
 
     def print_it(host, ttl, answer):
         global count
-        print('%s: %s' % (host, answer))
+        print(('%s: %s' % (host, answer)))
         count = count - 1
         if not count:
             r.close()
@@ -424,4 +422,4 @@ if __name__ == '__main__':
             # hooked asyncore.loop()
     while asyncore.socket_map:
         asyncore.poll(30.0)
-        print('requests outstanding: %d' % len(r.request_map))
+        print(('requests outstanding: %d' % len(r.request_map)))

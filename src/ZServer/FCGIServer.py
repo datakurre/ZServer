@@ -48,15 +48,18 @@ from ZServer.Zope2.Startup import config
 
 from ZServer import DebugLogger
 
-from cStringIO import StringIO
 from tempfile import TemporaryFile
 import socket
 import string
 import os
 import sys
 import time
-import thread
 import base64
+import six
+from six.moves import map
+
+from io import StringIO
+
 
 tz_for_log = compute_timezone_for_log()
 
@@ -123,7 +126,7 @@ class FCGIRecord(object):
     def __init__(self, header=None):
         if header:
             # extract the record header values.
-            vals = map(ord, header)
+            vals = list(map(ord, header))
             self.version = vals[0]
             self.recType = vals[1]
             self.reqId = (vals[2] << 8) + vals[3]
@@ -167,7 +170,7 @@ class FCGIRecord(object):
                 self.values[name] = value
 
         elif self.recType == FCGI_END_REQUEST:
-            b = map(ord, c[0:4])
+            b = list(map(ord, c[0:4]))
             self.appStatus = (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + b[3]
             self.protocolStatus = ord(c[4])
 
@@ -179,7 +182,7 @@ class FCGIRecord(object):
         pos = pos + 1
         if nameLen & 0x80:
             # is the high bit set? if so, size is 4 bytes, not 1.
-            b = map(ord, st[pos:pos + 3])
+            b = list(map(ord, st[pos:pos + 3]))
             pos = pos + 3
             nameLen = ((nameLen & 0x7F) << 24) + \
                       (b[0] << 16) + (b[1] << 8) + b[2]
@@ -187,7 +190,7 @@ class FCGIRecord(object):
         valueLen = ord(st[pos])
         pos = pos + 1
         if valueLen & 0x80:  # same thing here...
-            b = map(ord, st[pos:pos + 3])
+            b = list(map(ord, st[pos:pos + 3]))
             pos = pos + 3
             valueLen = ((valueLen & 0x7F) << 24) + \
                        (b[0] << 16) + (b[1] << 8) + b[2]
@@ -258,7 +261,7 @@ class FCGIRecord(object):
                cLen & 0xFF,
                padLen,
                0]
-        hdr = string.join(map(chr, hdr), '')
+        hdr = string.join(list(map(chr, hdr)), '')
         return hdr + content + padLen * '\000'
 
 
@@ -532,7 +535,7 @@ class FCGIChannel(asynchat.async_chat):
                    cLen & 0xFF,
                    padLen,
                    0]
-            hdr = string.join(map(chr, hdr), '')
+            hdr = string.join(list(map(chr, hdr)), '')
             self.push(hdr, 0)
             self.push(p, 0)
             self.push(padLen * '\000', 0)
@@ -569,7 +572,7 @@ class FCGIChannel(asynchat.async_chat):
         self.closed = 1
         while self.producer_fifo:
             p = self.producer_fifo.first()
-            if p is not None and not isinstance(p, basestring):
+            if p is not None and not isinstance(p, six.string_types):
                 p.more()  # free up resources held by producer
             self.producer_fifo.pop()
         asyncore.dispatcher.close(self)
@@ -689,7 +692,7 @@ class FCGIResponse(HTTPResponse):
                         l = string.atoi(l)
                     if l > 128000:
                         self._tempfile = TemporaryFile()
-                        self._templock = thread.allocate_lock()
+                        self._templock = six.moves._thread.allocate_lock()
                 except Exception:
                     pass
 

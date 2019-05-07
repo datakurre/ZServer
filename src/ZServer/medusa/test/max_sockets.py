@@ -1,5 +1,6 @@
 import socket
 import select
+from six.moves import range
 
 # several factors here we might want to test:
 # 1) max we can create

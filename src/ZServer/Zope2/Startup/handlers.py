@@ -120,10 +120,17 @@ def root_handler(cfg):
 
         import Products
         L = []
-        for d in cfg.products + Products.__path__:
-            if d not in L:
-                L.append(d)
-        Products.__path__[:] = L
+        try:
+            for d in cfg.products + Products.__path__._path:
+                if d not in L:
+                    L.append(d)
+            Products.__path__._path[:] = L
+        except AttributeError:
+            # Python 2
+            for d in cfg.products + Products.__path__:
+                if d not in L:
+                    L.append(d)
+            Products.__path__[:] = L
 
     if hasattr(cfg, 'servers'):
         # if no servers are defined, create default servers

@@ -3,6 +3,7 @@
 import re
 import string
 import time
+from six.moves import range
 
 
 def concat(*args):

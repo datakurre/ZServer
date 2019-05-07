@@ -20,7 +20,7 @@ from __future__ import absolute_import
 
 from ZPublisher.HTTPRequest import HTTPRequest
 
-from cStringIO import StringIO
+from io import StringIO
 import os
 from base64 import encodestring
 import re
@@ -113,7 +113,7 @@ class FTPRequest(HTTPRequest):
         elif command == 'STOR':
             env['PATH_INFO'] = self._join_paths(channel.path, path)
             env['REQUEST_METHOD'] = 'PUT'
-            env['CONTENT_LENGTH'] = long(size)  # NOQA
+            env['CONTENT_LENGTH'] = int(size)  # NOQA
         else:
             env['PATH_INFO'] = self._join_paths(channel.path, path, command)
 

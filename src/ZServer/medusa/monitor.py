@@ -2,6 +2,7 @@
 # Author: Sam Rushing <rushing@nightmare.com>
 # python REPL channel.
 
+from __future__ import print_function
 import asyncore
 import asynchat
 from hashlib import md5
@@ -12,6 +13,8 @@ import time
 
 from .counter import counter
 from . import producers
+from six.moves import map
+from six.moves import input
 
 RCS_ID = '$Id$'
 VERSION = '0.0'
@@ -89,7 +92,7 @@ class monitor_channel(asynchat.async_chat):
                     result = eval(co, self.local_env)
                     method = 'eval'
                     if result is not None:
-                        print(repr(result))
+                        print((repr(result)))
                     self.local_env['_'] = result
                 except SyntaxError:
                     try:
@@ -112,7 +115,7 @@ class monitor_channel(asynchat.async_chat):
                             return
                         else:
                             raise
-                    exec co in self.local_env
+                    exec(co, self.local_env)
                     method = 'exec'
             except:
                 method = 'exception'
@@ -191,7 +194,7 @@ def hex_digest(s):
     m = md5()
     m.update(s)
     return string.joinfields(
-        map(lambda x: hex(ord(x))[2:], map(None, m.digest())),
+        [hex(ord(x))[2:] for x in list(m.digest())],
         '',
     )
 
@@ -326,8 +329,8 @@ if __name__ == '__main__':
     import sys
     if '-s' in sys.argv:
         sys.argv.remove('-s')
-        print 'Enter password: ',
-        password = raw_input()
+        print('Enter password: ', end=' ')
+        password = input()
     else:
         password = None
 

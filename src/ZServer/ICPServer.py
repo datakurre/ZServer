@@ -20,6 +20,7 @@ import asyncore
 import errno
 import socket
 import struct
+from six.moves import range
 
 
 ICP_OP_QUERY = 1

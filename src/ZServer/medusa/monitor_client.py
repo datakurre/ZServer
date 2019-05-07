@@ -1,6 +1,7 @@
 # -*- Mode: Python; tab-width: 4 -*-
 # monitor client, unix version.
 
+from __future__ import print_function
 import asyncore
 import asynchat
 from hashlib import md5
@@ -9,6 +10,8 @@ import socket
 import string
 import sys
 import os
+from six.moves import map
+from six.moves import input
 
 
 class stdin_channel(asyncore.file_dispatcher):
@@ -55,12 +58,12 @@ class monitor_client(asynchat.async_chat):
             self.push(hex_digest(self.timestamp + self.password) + '\r\n')
             self.sent_auth = 1
         else:
-            print
+            print()
 
     def handle_close(self):
         # close all the channels, which will make the standard main
         # loop exit.
-        map(lambda x: x.close(), asyncore.socket_map.values())
+        list(map(lambda x: x.close(), list(asyncore.socket_map.values())))
 
     def log(self, *ignore):
         pass
@@ -89,14 +92,14 @@ def hex_digest(s):
     m = md5()
     m.update(s)
     return string.join(
-        map(lambda x: hex(ord(x))[2:], map(None, m.digest())),
+        [hex(ord(x))[2:] for x in list(m.digest())],
         '',
     )
 
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print('Usage: %s host port' % sys.argv[0])
+        print(('Usage: %s host port' % sys.argv[0]))
         sys.exit(0)
 
     if ('-e' in sys.argv):
@@ -109,8 +112,8 @@ if __name__ == '__main__':
     sys.stderr.flush()
     try:
         os.system('stty -echo')
-        p = raw_input()
-        print
+        p = input()
+        print()
     finally:
         os.system('stty echo')
     stdin = stdin_channel(0)

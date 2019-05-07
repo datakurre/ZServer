@@ -8,6 +8,7 @@
 # May be possible to do it on Win32, using TCP localhost sockets.
 # [does winsock support 'socketpair'?]
 
+from __future__ import print_function
 import asyncore
 import asynchat
 
@@ -15,7 +16,7 @@ import fcntl
 import os
 import socket
 import string
-import thread
+import six.moves._thread
 
 try:
     from fcntl import F_GETFL, F_SETFL, O_NDELAY
@@ -56,7 +57,7 @@ class thread_channel(asyncore.file_dispatcher):
 
         of = os.fdopen(wfd, 'w')
 
-        thread.start_new_thread(
+        six.moves._thread.start_new_thread(
             self.function,
             # put the output file in front of the other arguments
             (of,) + self.args

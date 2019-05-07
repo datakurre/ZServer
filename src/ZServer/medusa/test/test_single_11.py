@@ -2,10 +2,12 @@
 
 # no-holds barred, test a single channel's pipelining speed
 
+from __future__ import print_function
 import string
 import socket
 import sys
 import time
+from six.moves import map
 
 
 def build_request_chain(num, host, request_size):
@@ -29,14 +31,14 @@ class timer(object):
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
-        print('usage: %s <host> <port> <request-size> <num-requests>' % (
-            sys.argv[0]))
+        print(('usage: %s <host> <port> <request-size> <num-requests>' % (
+            sys.argv[0])))
     else:
         host = sys.argv[1]
-        [port, request_size, num_requests] = map(
+        [port, request_size, num_requests] = list(map(
             string.atoi,
             sys.argv[2:]
-        )
+        ))
         chain = build_request_chain(num_requests, host, request_size)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
@@ -50,6 +52,6 @@ if __name__ == '__main__':
             else:
                 num_bytes = num_bytes + len(data)
         total_time = t.end()
-        print('total bytes received: %d' % num_bytes)
-        print('total time: %.2f sec' % (total_time))
-        print('transactions/sec: %.2f' % (num_requests / total_time))
+        print(('total bytes received: %d' % num_bytes))
+        print(('total time: %.2f sec' % (total_time)))
+        print(('transactions/sec: %.2f' % (num_requests / total_time)))

@@ -13,8 +13,6 @@
 """Commonly used functions for WebDAV support modules."""
 
 import re
-import urllib
-
 from Acquisition import aq_base, aq_parent
 from zExceptions import (
     HTTPConflict,
@@ -23,6 +21,13 @@ from zExceptions import (
     HTTPUnsupportedMediaType,
 )
 from zope.deferredimport import deprecated
+
+try:
+    from urllib.parse import splittype
+    from urllib.parse import splithost
+except ImportError:  # six.PY2
+    from urllib import splittype
+    from urllib import splithost
 
 deprecated(
     'Please import from App.Common.',
@@ -92,7 +97,7 @@ def is_acquired(ob):
     return 1
 
 
-def urlbase(url, ftype=urllib.splittype, fhost=urllib.splithost):
+def urlbase(url, ftype=splittype, fhost=splithost):
     # Return a '/' based url such as '/foo/bar', removing
     # type, host and port information if necessary.
     if url[0] == '/':

@@ -37,6 +37,7 @@ for all necessary information.  The available options are:
     Filename is required and should be the name of the file to store the
     information in (usually "inituser" or "access").
 """
+from __future__ import print_function
 import binascii
 import getopt
 import getpass
@@ -44,6 +45,8 @@ import os
 import random
 import sha
 import sys
+from six.moves import range
+from six.moves import input
 
 try:
     from crypt import crypt
@@ -96,10 +99,10 @@ def write_generated_password(home, ac_path, username):
 def write_access(home, user='', group=''):
     ac_path = os.path.join(home, 'access')
     if not os.path.exists(ac_path):
-        print('-' * 78)
+        print(('-' * 78))
         print('creating default access file')
         pw = write_generated_password(home, ac_path, 'emergency')
-        print("""Note:
+        print(("""Note:
         The emergency user name and password are 'emergency'
         and '%s'.
 
@@ -107,7 +110,7 @@ def write_access(home, user='', group=''):
         zpasswd script.  To find out more, type:
 
         %s zpasswd.py
-        """ % (pw, sys.executable))
+        """ % (pw, sys.executable)))
 
         import do
         do.ch(ac_path, user, group)
@@ -127,16 +130,16 @@ def get_password():
 def write_inituser(home, user='', group=''):
     ac_path = os.path.join(home, 'inituser')
     if not os.path.exists(ac_path):
-        print('-' * 78)
+        print(('-' * 78))
         print('creating default inituser file')
         pw = write_generated_password(home, ac_path, 'admin')
-        print("""Note:
+        print(("""Note:
         The initial user name and password are 'admin'
         and '%s'.
 
         You can change the name and password through the web
         interface or using the 'zpasswd.py' script.
-        """ % pw)
+        """ % pw))
 
         import do
         do.ch(ac_path, user, group)
@@ -194,7 +197,7 @@ def main():
     else:
         # No command line args, so prompt
         while 1:
-            username = raw_input("Username: ")
+            username = input("Username: ")
             if username != '':
                 break
 
@@ -208,14 +211,14 @@ SHA - SHA-1 hashed password (default)
 CRYPT - UNIX-style crypt password
 CLEARTEXT - no protection
 """)
-            encoding = raw_input("Encoding: ")
+            encoding = input("Encoding: ")
             if encoding == '':
                 encoding = 'SHA'
                 break
             if encoding.upper() in ['SHA', 'CRYPT', 'CLEARTEXT']:
                 break
 
-        domains = raw_input("Domain restrictions: ")
+        domains = input("Domain restrictions: ")
         if domains:
             domains = ":" + domains
 

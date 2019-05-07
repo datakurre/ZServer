@@ -78,6 +78,7 @@ from ZServer.utils import requestCloseOnExec
 import os
 import stat
 import time
+from six.moves import range
 
 
 class zope_ftp_channel(ftp_channel):
@@ -111,7 +112,7 @@ class zope_ftp_channel(ftp_channel):
         # LP #418454, Python 2.6 or later
         sabs = self.ac_out_buffer_size
         if len(data) > sabs:
-            for i in xrange(0, len(data), sabs):  # NOQA
+            for i in range(0, len(data), sabs):  # NOQA
                 self.producer_fifo.append(data[i:i + sabs])
         else:
             self.producer_fifo.append(data)
@@ -168,10 +169,10 @@ class zope_ftp_channel(ftp_channel):
         else:
             dir = path_args[0]
 
-        self.listdir(dir, long)
+        self.listdir(dir, int)
 
     def listdir(self, path, long=0):
-        response = make_response(self, self.listdir_completion, long)
+        response = make_response(self, self.listdir_completion, int)
         request = FTPRequest(path, 'LST', self, response,
                              globbing=self.globbing,
                              recursive=self.recursive)
@@ -186,7 +187,7 @@ class zope_ftp_channel(ftp_channel):
             file_infos = response._marshalledBody()
             if isinstance(file_infos[0], str):
                 file_infos = (file_infos,)
-            if long:
+            if int:
                 for id, stat_info in file_infos:
                     dir_list += filesys.unix_longify(id, stat_info) + '\r\n'
             else:

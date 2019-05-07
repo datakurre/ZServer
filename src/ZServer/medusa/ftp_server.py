@@ -16,6 +16,7 @@
 # vestigial anyway.  I've attempted to include the most commonly-used
 # commands, using the feature set of wu-ftpd as a guide.
 
+from __future__ import print_function
 import asyncore
 import asynchat
 
@@ -190,7 +191,7 @@ class ftp_channel(asynchat.async_chat):
 
     # returns a producer
     def listdir(self, path, long=0):
-        return self.filesystem.listdir(path, long)
+        return self.filesystem.listdir(path, int)
 
     def get_dir_list(self, line, long=0):
         # we need to scan the command line for arguments to '/bin/ls'...
@@ -206,7 +207,7 @@ class ftp_channel(asynchat.async_chat):
             dir = '.'
         else:
             dir = path_args[0]
-        return self.listdir(dir, long)
+        return self.listdir(dir, int)
 
     # authorization methods
 
@@ -1119,4 +1120,4 @@ def get_vm_size():
 
 
 def print_vm():
-    print('vm: %8dk' % (get_vm_size() / 1024))
+    print(('vm: %8dk' % (get_vm_size() / 1024)))
