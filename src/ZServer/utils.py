@@ -71,6 +71,7 @@ except (ImportError, AttributeError):
 
 
 def patchSyslogServiceName():
-    from .medusa import logger
+    pass
+    # from .medusa import logger
     # override the service name in logger.syslog_logger
-    logger.syslog_logger.svc_name = 'ZServer'
+    # logger.syslog_logger.svc_name = 'ZServer'

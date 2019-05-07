@@ -18,7 +18,17 @@ Each server type is represented by a ServerFactory instance.
 from __future__ import absolute_import
 
 import socket
+
 import ZConfig
+import twisted.internet
+from ZPublisher.WSGIPublisher import publish_module
+from ZServer.AccessLogger import AccessLogger
+from ZServer.TwistedHTTPServer import TwistedHTTPServer
+from ZServer.TwistedHTTPServer import TwistedWebDAVServer
+from twisted.application.service import Service
+from twisted.internet.endpoints import serverFromString
+from twisted.web.server import Site
+from twisted.web.wsgi import WSGIResource
 
 
 class ServerFactory(object):
@@ -58,6 +68,88 @@ class ServerFactory(object):
     def create(self):
         raise NotImplementedError(
             "Concrete ServerFactory classes must implement create().")
+
+
+class ZServerSite(Site):
+    def __init__(self, *args, **kwargs):
+        Site.__init__(self, *args, **kwargs)
+        self.logger = AccessLogger()
+
+    def log(self, request):
+        line = self._logFormatter(self._logDateTime, request) + u"\n"
+        self.logger.log(line)
+
+
+class TwistedHTTPServerFactory(Service, ServerFactory):
+    def __init__(self, section):
+        if not section.address:
+            raise ZConfig.ConfigurationError(
+                "No 'address' settings found "
+                "within the 'http-server' or 'webdav-source-server' section")
+        ServerFactory.__init__(self, section.address)
+        self.force_connection_close = section.force_connection_close
+        # webdav-source-server sections won't have webdav_source_clients:
+        webdav_clients = getattr(section, "webdav_source_clients", None)
+        self.fast_listen = getattr(section, 'fast_listen', True)
+        self.webdav_source_clients = webdav_clients
+        self.use_wsgi = section.use_wsgi
+
+    def create(self):
+        if self.use_wsgi:
+            resource = WSGIResource(
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
+                application=publish_module,
+            )
+        else:
+            resource = TwistedHTTPServer(
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
+                publish_module=publish_module,
+            )
+        site = ZServerSite(resource)
+        endpoint = serverFromString(
+            twisted.internet.reactor,
+            'tcp:port={port}'.format(port=self.port),
+        )
+        endpoint.listen(site)
+        return self
+
+
+class TwistedWebDAVSourceServerFactory(Service, ServerFactory):
+    def __init__(self, section):
+        if not section.address:
+            raise ZConfig.ConfigurationError(
+                "No 'address' settings found "
+                "within the 'http-server' or 'webdav-source-server' section")
+        ServerFactory.__init__(self, section.address)
+        self.force_connection_close = section.force_connection_close
+        # webdav-source-server sections won't have webdav_source_clients:
+        webdav_clients = getattr(section, "webdav_source_clients", None)
+        self.fast_listen = getattr(section, 'fast_listen', True)
+        self.webdav_source_clients = webdav_clients
+        self.use_wsgi = section.use_wsgi
+
+    def create(self):
+        if self.use_wsgi:
+            resource = WSGIResource(
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
+                application=publish_module,
+            )
+        else:
+            resource = TwistedWebDAVServer(
+                reactor=twisted.internet.reactor,
+                threadpool=twisted.internet.reactor.getThreadPool(),
+                publish_module=publish_module,
+            )
+        site = ZServerSite(resource)
+        endpoint = serverFromString(
+            twisted.internet.reactor,
+            'tcp:port={port}'.format(port=self.port),
+        )
+        endpoint.listen(site)
+        return self
 
 
 class HTTPServerFactory(ServerFactory):

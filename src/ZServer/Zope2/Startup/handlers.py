@@ -137,14 +137,6 @@ def root_handler(cfg):
         if not cfg.servers:
             cfg.servers = []
 
-        # prepare servers:
-        for factory in cfg.servers:
-            factory.prepare(cfg.ip_address or '',
-                            cfg.dns_resolver,
-                            "Zope2",
-                            cfg.cgi_environment,
-                            cfg.port_base)
-
     # set up trusted proxies
     if cfg.trusted_proxies:
         mapped = []
