@@ -16,6 +16,23 @@ from __future__ import absolute_import
 
 import sys
 
+# The default async io event loop and twisted reactor can only be
+# set once. Therefore they must be set as early as possible.
+
+try:
+    import uvloop
+    uvloop.install()
+except ImportError:
+    pass
+
+from twisted.internet.error import ReactorAlreadyInstalledError
+
+try:
+    import twisted.internet.asyncioreactor
+    twisted.internet.asyncioreactor.install()
+except (ImportError, ReactorAlreadyInstalledError):
+    pass
+
 
 def get_starter():
     if sys.platform[:3].lower() == "win":

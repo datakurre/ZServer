@@ -1,0 +1,106 @@
+=====================
+Logging using Twisted
+=====================
+
+In order to have access logs when using the Twisted servers, the best way is
+to hook into Twisted's logging framework. Thus we provide a logging observer
+that creates and emits a log entry via the standard Python logging
+framework. Note that this logging object *is* Twisted-dependent:
+
+Before we can create the observer and emit new log entries, we need to create
+a standard Python logger object that writes to an IO object that we can
+observe:
+
+  >>> import cStringIO
+  >>> logfile = cStringIO.StringIO()
+
+  >>> import logging
+  >>> logger = logging.getLogger('accesslog')
+  >>> logger.setLevel(logging.INFO)
+  >>> handler = logging.StreamHandler(logfile)
+  >>> handler.setFormatter(logging.Formatter('%(message)s'))
+  >>> logger.addHandler(handler)
+
+Now we create the observer for the access log:
+
+  >>> from zope.app.twisted import log
+  >>> observer = log.CommonAccessLoggingObserver()
+
+To start listening to Twisted logging calls, simply call ``start()``:
+
+  >>> import twisted.python.log
+  >>> observer.emit in twisted.python.log.theLogPublisher.observers
+  False
+  >>> observer.start()
+  >>> observer.emit in twisted.python.log.theLogPublisher.observers
+  True
+
+When the system emits an arbitrary log request, the observer does nothing
+
+  >>> from twisted.web2 import http, http_headers, iweb, channel
+  >>> twisted.python.log.msg('foo bar')
+  >>> logfile.getvalue()
+  ''
+
+because it is listening only to specific log dictionaries. The dictionary must
+contain an `interface` key that specifies ``web2.iweb.IRequest``, a `request`
+key that contains the HTTP request implementing ``web2.iweb.IRequest``, and
+the `response` of the request:
+
+  >>> class TestHTTPChannel(channel.http.HTTPChannelRequest):
+  ...     def getRemoteHost(self):
+  ...         return type('TestRemoteHost', (), {'host': '127.0.0.1'})
+
+  >>> chanRequest = TestHTTPChannel(None, 1)
+  >>> request = http.Request(chanRequest, 'GET', '/index.html', (1, 1),
+  ...                        0, http_headers.Headers())
+  >>> request.remoteAddr = chanRequest.getRemoteHost()
+
+  >>> response = http.Response()
+  >>> response.headers.setHeader('date', 1120000000)
+
+  >>> from zope.interface import implements
+  >>> from twisted.web2 import log
+  >>> class FauxContext(object):
+  ...     implements(log.ILogInfo)
+  ...     responseCompleted=True
+  ...     secondsTaken=1
+  ...     bytesSent=300
+  ...     startTime=1120000000
+
+  >>> eventDict = {'interface': iweb.IRequest,
+  ...              'request': request, 'response': response,
+  ...              'loginfo': FauxContext()}
+
+If we now emit a log event, we should receive an entry:
+
+  >>> twisted.python.log.msg(**eventDict)
+  >>> print logfile.getvalue() #doctest: +ELLIPSIS
+  127.0.0.1 - - [2.../Jun/2005:...] "GET /index.html HTTP/1.1" 200 300 "-" "-"
+  <BLANKLINE>
+
+If I now set the `referer` and `user-agent` headers, we get some more output:
+
+  >>> logfile = cStringIO.StringIO()
+  >>> handler.stream = logfile
+
+  >>> request.headers.setHeader('referer', 'http://localhost:8080/manage')
+  >>> request.headers.setHeader('user-agent', 'Mozilla 1.7')
+
+  >>> twisted.python.log.msg(**eventDict)
+  >>> print logfile.getvalue() #doctest: +ELLIPSIS
+  127.0.0.1 - - [2.../Jun/2005:...] "GET /index.html HTTP/1.1" 200 300
+  "http://localhost:8080/manage" "Mozilla 1.7"
+  <BLANKLINE>
+
+Finally, to end listening to Twisted logging calls, simply call ``stop()``:
+
+  >>> observer.emit in twisted.python.log.theLogPublisher.observers
+  True
+  >>> observer.stop()
+  >>> observer.emit in twisted.python.log.theLogPublisher.observers
+  False
+
+And cleanup the logger:
+
+  >>> logger.removeHandler(handler)
