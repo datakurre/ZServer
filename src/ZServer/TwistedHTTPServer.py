@@ -14,6 +14,7 @@ from twisted.internet.interfaces import IProducer
 from twisted.protocols.basic import FileSender
 from twisted.web.resource import IResource
 from twisted.web.server import NOT_DONE_YET
+from twisted.web.server import version
 from twisted.web.wsgi import _ErrorStream
 from twisted.web.wsgi import _InputStream
 from twisted.web.wsgi import _wsgiString
@@ -55,9 +56,10 @@ def make_environ(request):
         'SERVER_NAME': _wsgiString(request.getRequestHostname()),
         'SERVER_PORT': _wsgiString(str(request.getHost().port)),
         'SERVER_PROTOCOL': _wsgiString(request.clientproto),
-        'SERVER_SOFTWARE': 'Zope/%s ZServer/%s' % (
+        'SERVER_SOFTWARE': 'Zope/%s ZServer/%s %s' % (
             ZOPE_VERSION,
             ZSERVER_VERSION,
+            version.decode('utf-8'),
         ),
     }
 
@@ -146,6 +148,8 @@ class TwistedHTTPHandler:
         self.status = None
         self.headers = None
 
+        self.request.setHeader('server',
+                               self.environ['SERVER_SOFTWARE'].encode('utf-8'))
         self.request.notifyFinish().addBoth(self._finished)
 
     def _finished(self, ignored):
@@ -334,6 +338,8 @@ class TwistedWebDAVHandler:
         self.status = None
         self.headers = None
 
+        self.request.setHeader('server',
+                               self.environ['SERVER_SOFTWARE'].encode('utf-8'))
         self.request.notifyFinish().addBoth(self._finished)
 
     def _finished(self, ignored):
