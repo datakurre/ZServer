@@ -18,6 +18,7 @@ import sys
 
 
 _version_string = None
+_zserver_version = None
 
 
 def _prep_version_data():
@@ -27,11 +28,20 @@ def _prep_version_data():
         pyver = "python %d.%d.%d, %s" % (v[0], v[1], v[2], sys.platform)
         dist = pkg_resources.get_distribution('Zope')
         _version_string = "%s, %s" % (dist.version, pyver)
+    global _zserver_version
+    if _zserver_version is None:
+        dist = pkg_resources.get_distribution('ZServer')
+        _zserver_version = dist.version
 
 
 def getZopeVersion():
     _prep_version_data()
     return '(%s)' % _version_string
+
+
+def getZServerVersion():
+    _prep_version_data()
+    return _zserver_version
 
 
 def patchAsyncoreLogger():

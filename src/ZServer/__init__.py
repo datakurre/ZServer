@@ -58,7 +58,7 @@ deprecated(
 )
 
 # the ZServer version number
-ZSERVER_VERSION = '1.1'
+ZSERVER_VERSION = utils.getZServerVersion()
 
 # the Zope version string
 ZOPE_VERSION = utils.getZopeVersion()
