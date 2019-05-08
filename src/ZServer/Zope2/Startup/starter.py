@@ -205,6 +205,10 @@ class ZopeStarter(object):
         ZPublisher.Publish.set_default_debug_mode(self.cfg.debug_mode)
         ZPublisher.Publish.set_default_authentication_realm(
             self.cfg.http_realm)
+        from ZPublisher import WSGIPublisher
+        WSGIPublisher.set_default_debug_mode(self.cfg.debug_mode)
+        WSGIPublisher.set_default_authentication_realm(
+            self.cfg.http_realm)
         if self.cfg.trusted_proxies:
             mapped = []
             for name in self.cfg.trusted_proxies:
