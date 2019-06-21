@@ -269,6 +269,8 @@ class PubSubServerProtocol(WebSocketServerProtocol):
             s = ZmqSubConnection(zf, e)
             s.gotMessage = lambda payload, topic: self.gotMessage(payload, topic)
             self._zmq = s
+            self._guards = {}
+            self._filters = []
 
             # By default, subscribe messages from the current path and below
             default_filter = get_physical_path_from_vhm_path(self._environ["PATH_INFO"])
@@ -358,7 +360,7 @@ class PubSubServerProtocol(WebSocketServerProtocol):
 
     def onMessage(self, message, isBinary):
         if self._zmq:
-            match = re.match(r"SUBSCRIBE (/[^\s]+)".encode("utf-8"), message)
+            match = re.match(r"SUBSCRIBE (/[^\s]*)".encode("utf-8"), message)
             for filter_prefix in match and match.groups() or []:
                 if filter_prefix in self._filters:
                     super(PubSubServerProtocol, self).sendMessage(
