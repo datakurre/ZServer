@@ -26,6 +26,13 @@
        </description>
      </key>
      <key name="use-wsgi" datatype="boolean" default="off" />
+     <key name="websocket-ipc" datatype="string" default="zmq-ipc.sock">
+       <description>
+         Defines unix socket path to be used for ZeroMQ inter-process
+         notifications used to distribute notifications for all Websocket
+         clients.
+       </description>
+     </key>
   </sectiontype>
 
   <sectiontype name="webdav-source-server"
