@@ -27,6 +27,8 @@ from ZServer.TwistedHTTPServer import TwistedHTTPServer
 from ZServer.TwistedHTTPServer import TwistedWebDAVServer
 from twisted.application.service import Service
 from twisted.internet.endpoints import serverFromString
+from twisted.python.runtime import seconds
+from twisted.web.http import datetimeToLogString
 from twisted.web.server import Site
 from twisted.web.wsgi import WSGIResource
 
@@ -74,6 +76,13 @@ class ZServerSite(Site):
     def __init__(self, *args, **kwargs):
         Site.__init__(self, *args, **kwargs)
         self.logger = AccessLogger()
+
+    def _updateLogDateTime(self):
+        """
+        Update log datetime periodically, so we aren't always recalculating it.
+        """
+        self._logDateTime = datetimeToLogString(seconds())
+        self._logDateTimeCall = self._reactor.callLater(1, self._updateLogDateTime)
 
     def log(self, request):
         line = self._logFormatter(self._logDateTime, request) + u"\n"
