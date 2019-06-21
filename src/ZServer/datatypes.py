@@ -93,6 +93,7 @@ class TwistedHTTPServerFactory(Service, ServerFactory):
         self.fast_listen = getattr(section, 'fast_listen', True)
         self.webdav_source_clients = webdav_clients
         self.use_wsgi = section.use_wsgi
+        self.websocket_ipc = section.websocket_ipc
 
     def create(self):
         if self.use_wsgi:
@@ -106,6 +107,7 @@ class TwistedHTTPServerFactory(Service, ServerFactory):
                 reactor=twisted.internet.reactor,
                 threadpool=twisted.internet.reactor.getThreadPool(),
                 publish_module=publish_module,
+                websocket_ipc=self.websocket_ipc,
             )
         site = ZServerSite(resource)
         endpoint = serverFromString(
