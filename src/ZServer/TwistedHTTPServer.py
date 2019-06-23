@@ -274,9 +274,8 @@ class PubSubServerProtocol(WebSocketServerProtocol):
 
             # By default, subscribe messages from the current path and below
             default_filter = get_physical_path_from_vhm_path(self._environ["PATH_INFO"])
-            default_filter = default_filter.encode("utf-8")
-            logger.debug(b"SUBSCRIBE " + default_filter)
-            self._zmq.subscribe(default_filter)
+            logger.debug("SUBSCRIBE " + default_filter)
+            self._zmq.subscribe(default_filter.encode('utf-8'))
             self._filters.append(default_filter)
 
         # Cleanup inherited environ
@@ -359,40 +358,52 @@ class PubSubServerProtocol(WebSocketServerProtocol):
         )
 
     def onMessage(self, message, isBinary):
-        if self._zmq:
-            match = re.match(r"SUBSCRIBE (/[^\s]*)".encode("utf-8"), message)
-            for filter_prefix in match and match.groups() or []:
-                if filter_prefix in self._filters:
-                    super(PubSubServerProtocol, self).sendMessage(
-                        json.dumps({"status_code": 304}).encode("utf-8"), isBinary=False
-                    )
-                else:
-                    logger.debug(b"SUBSCRIBE " + filter_prefix)
-                    self._filters.append(filter_prefix)
-                    self._zmq.subscribe(filter_prefix)
-                    self._filters.append(filter_prefix)
-                    super(PubSubServerProtocol, self).sendMessage(
-                        json.dumps({"status_code": 200}).encode("utf-8"), isBinary=False
-                    )
+        # noinspection PyBroadException
+        try:
+            data = json.loads(message)
+        except Exception as e:
+            super(PubSubServerProtocol, self).sendMessage(
+                json.dumps({"statusCode": 500, "reasonPhrase": str(e)}).encode("utf-8"), isBinary=False
+            )
+            return
 
-            match = re.match(r"UNSUBSCRIBE (/[^\s]+)".encode("utf-8"), message)
-            for filter_prefix in match and match.groups() or []:
-                if filter_prefix not in self._filters:
-                    super(PubSubServerProtocol, self).sendMessage(
-                        json.dumps({"status_code": 304}).encode("utf-8"), isBinary=False
-                    )
-                else:
-                    logger.debug(b"UNSUBSCRIBE " + filter_prefix)
-                    self._zmq.unsubscribe(filter_prefix)
-                    self._filters.remove(filter_prefix)
-                    super(PubSubServerProtocol, self).sendMessage(
-                        json.dumps({"status_code": 200}).encode("utf-8"), isBinary=False
-                    )
+        method = data.get('method') or ''
+        path = data.get('path') or ''
+        if self._zmq and method == 'SUBSCRIBE' and path.startswith('/'):
+            if data.get('path') in self._filters or len(self._filters) >= 1000:
+                super(PubSubServerProtocol, self).sendMessage(
+                    json.dumps({"statusCode": 304}).encode("utf-8"), isBinary=False
+                )
+            else:
+                logger.debug("SUBSCRIBE " + path)
+                self._zmq.subscribe(path.encode('utf-8'))
+                self._filters.append(path)
+                super(PubSubServerProtocol, self).sendMessage(
+                    json.dumps({"statusCode": 200}).encode("utf-8"), isBinary=False
+                )
+
+        elif self._zmq and method == 'UNSUBSCRIBE' and path.startswith('/'):
+            if path not in self._filters:
+                super(PubSubServerProtocol, self).sendMessage(
+                    json.dumps({"status_code": 304}).encode("utf-8"), isBinary=False
+                )
+            else:
+                logger.debug("UNSUBSCRIBE " + path)
+                self._zmq.unsubscribe(path.encode('utf-8'))
+                self._filters.remove(path)
+                super(PubSubServerProtocol, self).sendMessage(
+                    json.dumps({"status_code": 200}).encode("utf-8"), isBinary=False
+                )
+        else:
+            # TODO: Pass at least methods GET, POST, PUT and DELETE to publish_module
+            super(PubSubServerProtocol, self).sendMessage(
+                json.dumps({"statusCode": 304, "reasonPhrase": "No Operation"}).encode("utf-8"), isBinary=False
+            )
 
     def _connectionLost(self, reason):
         if self._zmq is not None:
-            for topic in self._filters:
-                self._zmq.unsubscribe(topic)
+            for prefix_filter in self._filters:
+                self._zmq.unsubscribe(prefix_filter.encode('utf-8'))
         super(PubSubServerProtocol, self)._connectionLost(reason)
 
 
