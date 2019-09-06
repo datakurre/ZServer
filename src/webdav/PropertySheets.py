@@ -25,10 +25,6 @@ from webdav.common import isDavCollection
 from webdav.common import urlbase
 import six
 
-if sys.version_info >= (3, ):
-    six.string_types = str
-    six.text_type = str
-
 
 def absattr(attr):
     if callable(attr):

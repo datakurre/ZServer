@@ -34,9 +34,6 @@ from ZServer.Testing.functional import ResponseWrapper
 from ZServer.Testing.functional import savestate
 import six
 
-if sys.version_info >= (3, ):
-    six.string_types = str
-
 
 # @zope.interface.implementer(zope.server.interfaces.IHeaderOutput)
 class HTTPHeaderOutput(object):
