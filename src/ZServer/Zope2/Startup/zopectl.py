@@ -51,8 +51,6 @@ from ZConfig.components.logger.handlers import FileHandlerFactory
 from ZServer.Zope2.Startup.options import ZopeOptions
 import six
 
-if sys.version_info > (3, ):
-    six.string_types = str
 
 WIN = False
 if sys.platform[:3].lower() == "win":

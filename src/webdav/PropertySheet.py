@@ -17,10 +17,6 @@ from webdav.xmltools import escape
 import six
 from six.moves import map
 
-if sys.version_info >= (3, ):
-    six.string_types = str
-    six.text_type = str
-
 
 def xml_escape(value):
     if not isinstance(value, six.string_types):
