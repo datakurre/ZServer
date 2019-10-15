@@ -90,6 +90,10 @@ class ZServerSite(Site):
 
 
 class TwistedHTTPServerFactory(Service, ServerFactory):
+
+    endpoint = None
+    site = None
+
     def __init__(self, section):
         if not section.address:
             raise ZConfig.ConfigurationError(
@@ -118,13 +122,17 @@ class TwistedHTTPServerFactory(Service, ServerFactory):
                 publish_module=publish_module,
                 websocket_ipc=self.websocket_ipc,
             )
-        site = ZServerSite(resource)
-        endpoint = serverFromString(
+        self.site = ZServerSite(resource)
+        self.endpoint = serverFromString(
             twisted.internet.reactor,
             'tcp:port={port}'.format(port=self.port),
         )
-        endpoint.listen(site)
+        if self.fast_listen:
+            self.listen()
         return self
+
+    def listen(self, *args):
+        self.endpoint.listen(self.site)
 
 
 class TwistedWebDAVSourceServerFactory(Service, ServerFactory):
