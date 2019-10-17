@@ -167,7 +167,6 @@ class TwistedHTTPHandler:
         self.environ = make_environ(request)
         self.status = None
         self.headers = None
-
         self.request.setHeader(
             "server", self.environ["SERVER_SOFTWARE"].encode("utf-8")
         )
@@ -204,7 +203,7 @@ class TwistedHTTPHandler:
 
         for name, value in self.headers:
             # Don't allow the application to control these required headers.
-            if name.lower() not in ("server", "date"):
+            if name.lower() not in ("date"):
                 self.request.responseHeaders.addRawHeader(
                     _wsgiStringToBytes(name), _wsgiStringToBytes(value)
                 )
