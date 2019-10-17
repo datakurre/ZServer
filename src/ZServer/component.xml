@@ -12,7 +12,6 @@
                datatype=".TwistedHTTPServerFactory"
                implements="ZServer.server">
      <key name="address" datatype="inet-binding-address"/>
-     <key name="force-connection-close" datatype="boolean" default="off"/>
      <key name="webdav-source-clients">
        <description>
          Regular expression used to identify clients who should
@@ -35,11 +34,45 @@
      </key>
   </sectiontype>
 
+  <sectiontype name="https-server"
+               datatype=".TwistedHTTPSServerFactory"
+               implements="ZServer.server">
+    <key name="address" datatype="inet-binding-address"/>
+    <key name="webdav-source-clients">
+      <description>
+        Regular expression used to identify clients who should
+        receive WebDAV source responses to GET requests.
+      </description>
+    </key>
+    <key name="fast-listen" datatype="boolean" default="on">
+      <description>
+        Defines whether the HTTP server should listen for requests
+        immediately or only after Zope is ready to run.
+      </description>
+    </key>
+    <key name="websocket-ipc" datatype="string" default="zmq-ipc.sock">
+      <description>
+        Defines unix socket path to be used for ZeroMQ inter-process
+        notifications used to distribute notifications for all Websocket
+        clients.
+      </description>
+    </key>
+    <key name="private-key" datatype="string">
+      <description>
+        Defines path to SSL context private key.
+      </description>
+    </key>
+    <key name="certificate" datatype="string">
+      <description>
+        Defines path to SSL context certificate.
+      </description>
+    </key>
+  </sectiontype>
+
   <sectiontype name="webdav-source-server"
                datatype=".TwistedWebDAVSourceServerFactory"
                implements="ZServer.server">
      <key name="address" datatype="inet-binding-address"/>
-     <key name="force-connection-close" datatype="boolean" default="off"/>
      <key name="use-wsgi" datatype="boolean" default="off" />
   </sectiontype>
 

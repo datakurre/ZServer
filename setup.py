@@ -68,7 +68,7 @@ setup(
         'Zope >= 4.0b6',
     ],
     extras_require={
-        'http2': ['bcrypt', 'service_identity', 'Twisted [http2]'],
+        'http2': ['bcrypt', 'service_identity', 'Twisted [http2]', 'pyOpenSSL'],
         'uvloop': ['uvloop'],
         'sdnotify': ['sdnotify'],
     },

@@ -70,6 +70,7 @@ def make_environ(request):
         "QUERY_STRING": _wsgiString(query_string),
         "CONTENT_TYPE": _wsgiString(request.getHeader(b"content-type") or ""),
         "CONTENT_LENGTH": _wsgiString(request.getHeader(b"content-length") or ""),
+        "HTTPS": request.isSecure() and '1' or False,
         "SERVER_NAME": _wsgiString(request.getRequestHostname()),
         "SERVER_PORT": _wsgiString(str(request.getHost().port)),
         "SERVER_PROTOCOL": _wsgiString(request.clientproto),

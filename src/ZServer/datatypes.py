@@ -100,7 +100,6 @@ class TwistedHTTPServerFactory(Service, ServerFactory):
                 "No 'address' settings found "
                 "within the 'http-server' or 'webdav-source-server' section")
         ServerFactory.__init__(self, section.address)
-        self.force_connection_close = section.force_connection_close
         # webdav-source-server sections won't have webdav_source_clients:
         webdav_clients = getattr(section, "webdav_source_clients", None)
         self.fast_listen = getattr(section, 'fast_listen', True)
@@ -135,6 +134,50 @@ class TwistedHTTPServerFactory(Service, ServerFactory):
         self.endpoint.listen(self.site)
 
 
+class TwistedHTTPSServerFactory(Service, ServerFactory):
+
+    endpoint = None
+    site = None
+
+    def __init__(self, section):
+        if not section.address:
+            raise ZConfig.ConfigurationError(
+                "No 'address' settings found "
+                "within the 'http-server' or 'webdav-source-server' section")
+        ServerFactory.__init__(self, section.address)
+        # webdav-source-server sections won't have webdav_source_clients:
+        webdav_clients = getattr(section, "webdav_source_clients", None)
+        self.fast_listen = getattr(section, 'fast_listen', True)
+        self.webdav_source_clients = webdav_clients
+        self.websocket_ipc = section.websocket_ipc
+        self.private_key = section.private_key
+        self.certificate = section.certificate
+
+    def create(self):
+        resource = TwistedHTTPServer(
+            reactor=twisted.internet.reactor,
+            threadpool=twisted.internet.reactor.getThreadPool(),
+            publish_module=publish_module,
+            websocket_ipc=self.websocket_ipc,
+        )
+        self.site = ZServerSite(resource)
+        self.endpoint = serverFromString(
+            twisted.internet.reactor,
+            'ssl:port={port}:privateKey={private_key}:certKey={certificate}'.format(
+                port=self.port,
+                private_key=self.private_key,
+                certificate=self.certificate
+            ),
+        )
+
+        if self.fast_listen:
+            self.listen()
+        return self
+
+    def listen(self, *args):
+        self.endpoint.listen(self.site)
+
+
 class TwistedWebDAVSourceServerFactory(Service, ServerFactory):
     def __init__(self, section):
         if not section.address:
@@ -142,7 +185,6 @@ class TwistedWebDAVSourceServerFactory(Service, ServerFactory):
                 "No 'address' settings found "
                 "within the 'http-server' or 'webdav-source-server' section")
         ServerFactory.__init__(self, section.address)
-        self.force_connection_close = section.force_connection_close
         # webdav-source-server sections won't have webdav_source_clients:
         webdav_clients = getattr(section, "webdav_source_clients", None)
         self.fast_listen = getattr(section, 'fast_listen', True)
