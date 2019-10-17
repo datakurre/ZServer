@@ -24,6 +24,7 @@
          immediately or only after Zope is ready to run.
        </description>
      </key>
+     <key name="force-connection-close" datatype="boolean" default="off" />
      <key name="use-wsgi" datatype="boolean" default="off" />
      <key name="websocket-ipc" datatype="string" default="zmq-ipc.sock">
        <description>
@@ -50,6 +51,7 @@
         immediately or only after Zope is ready to run.
       </description>
     </key>
+    <key name="force-connection-close" datatype="boolean" default="off" />
     <key name="websocket-ipc" datatype="string" default="zmq-ipc.sock">
       <description>
         Defines unix socket path to be used for ZeroMQ inter-process
@@ -73,6 +75,7 @@
                datatype=".TwistedWebDAVSourceServerFactory"
                implements="ZServer.server">
      <key name="address" datatype="inet-binding-address"/>
+     <key name="force-connection-close" datatype="boolean" default="off" />
      <key name="use-wsgi" datatype="boolean" default="off" />
   </sectiontype>
 
