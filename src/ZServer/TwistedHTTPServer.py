@@ -385,14 +385,14 @@ class PubSubServerProtocol(WebSocketServerProtocol):
         elif self._zmq and method == 'UNSUBSCRIBE' and path.startswith('/'):
             if path not in self._filters:
                 super(PubSubServerProtocol, self).sendMessage(
-                    json.dumps({"status_code": 304}).encode("utf-8"), isBinary=False
+                    json.dumps({"statusCode": 304}).encode("utf-8"), isBinary=False
                 )
             else:
                 logger.debug("UNSUBSCRIBE " + path)
                 self._zmq.unsubscribe(path.encode('utf-8'))
                 self._filters.remove(path)
                 super(PubSubServerProtocol, self).sendMessage(
-                    json.dumps({"status_code": 200}).encode("utf-8"), isBinary=False
+                    json.dumps({"statusCode": 200}).encode("utf-8"), isBinary=False
                 )
         else:
             # TODO: Pass at least methods GET, POST, PUT and DELETE to publish_module
