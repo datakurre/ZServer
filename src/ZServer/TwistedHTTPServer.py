@@ -514,7 +514,7 @@ class TwistedHTTPServer:
         self.ws = CustomWebSocketResource(factory)
 
     def render(self, request):
-        if request.getHeader("upgrade") == "websocket":
+        if (request.getHeader("upgrade") or "").lower() == "websocket":
             return self.ws.render(
                 request=request,
                 reactor=self._reactor,
