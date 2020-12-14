@@ -169,7 +169,10 @@ class ZopeStarter(object):
 
     def setupInterpreter(self):
         # make changes to the python interpreter environment
-        sys.setcheckinterval(self.cfg.python_check_interval)
+        try:
+            sys.setswitchinterval(self.cfg.python_check_interval)
+        except AttributeError:
+            sys.setcheckinterval(self.cfg.python_check_interval)
 
     def setupLocale(self):
         # set a locale if one has been specified in the config
